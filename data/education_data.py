@@ -4,18 +4,15 @@ education_data = {
         "United States": {
             "education_levels": [
                 "High School",
-                "Associates",
+                "Associates", 
                 "Bachelors",
                 "Masters",
                 "Doctorate"
             ],
-            "school_types": {
-                "high_school": ["Public", "Private"],
-                "university": ["Public", "Private", "Community College"]
-            },
+            "school_types": ["High School", "College", "University"],
             "major_fields": [
                 "Computer Science",
-                "Business",
+                "Business", 
                 "Psychology",
                 "Graphic Design",
                 "Accounting",
@@ -28,19 +25,16 @@ education_data = {
             "education_levels": [
                 "High School",
                 "Associates",
-                "Bachelors",
+                "Bachelors", 
                 "Masters",
                 "Doctorate"
             ],
-            "school_types": {
-                "high_school": ["Public", "Private"],
-                "university": ["Public", "Private", "Community College"]
-            },
+            "school_types": ["High School", "College", "University"],
             "major_fields": [
                 "Business",
                 "Economics",
                 "Law",
-                "Psychology",
+                "Psychology", 
                 "Marketing",
                 "Accounting"
             ]
@@ -52,10 +46,7 @@ education_data = {
                 "Masters",
                 "Doctorate"
             ],
-            "school_types": {
-                "high_school": ["Public", "Private"],
-                "university": ["Public", "Private"]
-            },
+            "school_types": ["High School", "College", "University"],
             "major_fields": [
                 "Business",
                 "Engineering",
@@ -69,13 +60,10 @@ education_data = {
             "education_levels": [
                 "High School",
                 "Bachelors",
-                "Masters",
+                "Masters", 
                 "Doctorate"
             ],
-            "school_types": {
-                "high_school": ["Public", "Private"],
-                "university": ["Public"]
-            },
+            "school_types": ["High School", "College", "University"],
             "major_fields": [
                 "Engineering",
                 "Computer Science",
@@ -92,17 +80,13 @@ education_data = {
                 "Masters",
                 "Doctorate"
             ],
-            "school_types": {
-                "high_school": ["Public", "Private"],
-                "university": ["Public", "Private"]
-            },
+            "school_types": ["High School", "College", "University"],
             "major_fields": [
                 "Engineering",
                 "Computer Science",
                 "Medicine",
                 "Business",
                 "Accounting",
-                "Pharmacy"
             ]
         },
         "Philippines": {
@@ -112,12 +96,8 @@ education_data = {
                 "Masters",
                 "Doctorate"
             ],
-            "school_types": {
-                "high_school": ["Public", "Private", "Catholic"],
-                "university": ["Public", "Private"]
-            },
+            "school_types": ["High School", "College", "University"],
             "major_fields": [
-                "Nursing",
                 "Engineering",
                 "Business",
                 "Education",
@@ -132,17 +112,13 @@ education_data = {
                 "Masters",
                 "Doctorate"
             ],
-            "school_types": {
-                "high_school": ["Public", "Private", "International"],
-                "university": ["Public", "Private"]
-            },
+            "school_types": ["High School", "College", "University"],
             "major_fields": [
                 "Business",
-                "Engineering",
+                "Engineering", 
                 "Computer Science",
                 "Architecture",
                 "Medicine",
-                "Finance"
             ]
         },
         "Japan": {
@@ -152,10 +128,7 @@ education_data = {
                 "Masters",
                 "Doctorate"
             ],
-            "school_types": {
-                "high_school": ["Public", "Private"],
-                "university": ["Public", "Private"]
-            },
+            "school_types": ["High School", "College", "University"],
             "major_fields": [
                 "Engineering",
                 "Business",
@@ -169,29 +142,19 @@ education_data = {
 
     "degree_requirements": {
         "High School": {
-            "min_age": 14,
-            "years": 4,
-            "prerequisites": None
+            "min_age": 18
         },
         "Associates": {
-            "min_age": 18,
-            "years": 2,
-            "prerequisites": "High School Diploma"
+            "min_age": 20
         },
         "Bachelors": {
-            "min_age": 20,
-            "years": 4,
-            "prerequisites": "Associates Degree"
+            "min_age": 22
         },
         "Masters": {
-            "min_age": 24,
-            "years": 2,
-            "prerequisites": "Bachelors Degree"
+            "min_age": 26
         },
         "Doctorate": {
-            "min_age": 24,
-            "years": 4,
-            "prerequisites": "Masters Degree"
+            "min_age": 28
         }
     }
 }
