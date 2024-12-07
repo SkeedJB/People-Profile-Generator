@@ -18,12 +18,13 @@ class PersonProfile:
         self.age_group = random.choice(list(profile_data["age_groups"].keys()))
         birth_range = profile_data["age_groups"][self.age_group]["birth_years"]
         
-        # Calculate age range based on birth years
+        # Get age directly from range
+        self.age_range = range(birth_range[0], birth_range[1])
+        self.birth_year = random.choice(self.age_range)
+
+        # Calculate age from birth year
         current_year = datetime.now().year
-        min_age = current_year - birth_range[1]  # Youngest possible age
-        max_age = current_year - birth_range[0]  # Oldest possible age
-        self.age = random.randint(min_age, max_age)
-        self.birth_year = current_year - self.age
+        self.age = current_year - self.birth_year
 
         if self.gender == "male":
             self.first_name = random.choice(profile_data["male_first_names"][self.country])
@@ -35,10 +36,11 @@ class PersonProfile:
         # Store as instance variables
         self.education_profile = EducationProfile(
             country=self.country, 
-            age_group=self.age_group
+            age=self.age
         ).generate_education_profile()
 
         self.career_profile = CareerProfile(
+            age=self.age,
             education_level=self.education_profile["education_level"],
             major=self.education_profile["major_field"]
         ).generate_career_profile()

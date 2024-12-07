@@ -10,12 +10,12 @@ st.set_page_config(layout="wide")
 def main():
     st.title("Generated Profiles")
     
-    # Initialize or generate profiles
+    # Initialize profiles
     if "profiles" not in st.session_state:
         with st.spinner("Generating profiles..."):
             st.session_state.profiles = generate_profiles()
     
-    # Create two rows with 3 columns each
+    # Two rows with 3 columns each
     for row in range(2):
         cols = st.columns(3)
         for col in range(3):
@@ -23,14 +23,20 @@ def main():
             if idx < len(st.session_state.profiles):
                 profile = st.session_state.profiles[idx]
                 with cols[col]:
-                    # Create a box effect with markdown
+                    # Box effect with markdown
                     st.markdown("""
                         <div style="
-                            padding: 20px;
-                            border-radius: 10px;
-                            border: 1px solid #ddd;
-                            margin: 10px 0;
-                            background-color: #f8f9fa;
+                            padding: 25px;
+                            border-radius: 15px;
+                            border: 2px solid #e0e0e0;
+                            margin: 12px 0;
+                            background-color: white;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                            transition: transform 0.2s ease;
+                            &:hover {
+                                transform: translateY(-2px);
+                                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+                            }
                         ">
                     """, unsafe_allow_html=True)
                     
@@ -45,15 +51,14 @@ def main():
                     
                     st.markdown("</div>", unsafe_allow_html=True)
     
-    # Add a button to generate new profiles
+    # Buttons
     if st.button("Generate New Profiles", use_container_width=True):
         with st.spinner("Generating new profiles..."):
             st.session_state.profiles = generate_profiles()
-            st.experimental_rerun()
-
-    # Add a button to go back home
+        
     if st.button("Back to Home", use_container_width=True):
         st.switch_page("home.py")
+
 
 def generate_profiles():
     profiles = []
@@ -68,13 +73,11 @@ def generate_profiles():
             'birth_year': person.birth_year,
             'education_level': person.education_profile['education_level'],
             'major': person.education_profile['major_field'],
-            'school_type': person.education_profile['school_type'],
             'career_pathway': person.career_profile['career_pathway'],
             'career_level': person.career_profile['level'],
             'job_title': person.career_profile['job_title']
         }
         profiles.append(profile)
-        st.success(f"Generated profile {i+1}: {profile['name']}")
     return profiles
 
 if __name__ == "__main__":

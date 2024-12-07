@@ -18,16 +18,17 @@ def display_profile(profile):
     st.header("Education")
     st.write(f"Education Level: {profile['education_level']}")
     st.write(f"Major: {profile['major']}")
-    st.write(f"School Type: {profile['school_type']}")
 
     st.header("Career")
     st.write(f"Career Pathway: {profile['career_pathway']}")
     st.write(f"Career Level: {profile['career_level']}")
     st.write(f"Job Title: {profile['job_title']}")
 
+    if st.button("Back to Dashboard"):
+        st.switch_page("pages/profile_dashboard.py")
 
     if st.button("Back to Home"):
-        st.switch_page("pages/home.py")
+        st.switch_page("home.py")
 
 def main():
     if ("selected_profile_idx" not in st.session_state or 
