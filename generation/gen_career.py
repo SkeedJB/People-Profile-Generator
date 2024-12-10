@@ -41,7 +41,7 @@ class CareerProfile:
 
     def generate_career_profile(self):
         # If under 18, return student profile
-        if self.age < 18:
+        if self.age < 14 and self.age < 25:
             return {
                 "career_pathway": "Student",
                 "level": "Not Applicable", 

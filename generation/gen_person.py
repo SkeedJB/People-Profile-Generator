@@ -1,41 +1,43 @@
-from data.location_data import location_data
+from faker import Faker
 from data.person_data import profile_data
 from generation.gen_education import EducationProfile
 from generation.gen_career import CareerProfile
+from data.country_data import COUNTRIES, COUNTRY_LOCALES
 import pandas as pd
-from datetime import datetime
 import random
+from datetime import datetime
 
 class PersonProfile:
     def __init__(self):
         pass
 
-    def generate_person_profile(self):
-        self.country = random.choice(list(location_data["countries"].keys()))
+    def get_country(self):
+        self.country = random.choice(COUNTRIES)
+        self.country_code = COUNTRY_LOCALES[self.country]
+        return self.country, self.country_code
+
+    def get_gender(self):
         self.gender = random.choice(profile_data["sex"])
-        
-        # First randomly select age group
-        self.age_group = random.choice(list(profile_data["age_groups"].keys()))
-        birth_range = profile_data["age_groups"][self.age_group]["birth_years"]
-        
-        # Get age directly from range
-        self.age_range = range(birth_range[0], birth_range[1])
-        self.birth_year = random.choice(self.age_range)
+        return self.gender
 
-        # Calculate age from birth year
-        current_year = datetime.now().year
-        self.age = current_year - self.birth_year
+    def get_name(self):
+        fake = Faker(locale=self.country_code)
+        self.first_name = fake.unique.first_name_male()
+        self.last_name = fake.unique.last_name()
+        return self.first_name, self.last_name
+    
+    def get_age(self):
+        birth_year = random.randint(profile_data["birth_range"][0], profile_data["birth_range"][1])
+        self.age = datetime.now().year - birth_year
+        return self.age
 
-        if self.gender == "male":
-            self.first_name = random.choice(profile_data["male_first_names"][self.country])
-        else:
-            self.first_name = random.choice(profile_data["female_first_names"][self.country])
-
-        self.last_name = random.choice(profile_data["last_names"][self.country])
-
+    def generate_person_profile(self):
+        self.get_country()
+        self.get_gender()
+        self.get_name()
+        self.get_age()
         # Store as instance variables
         self.education_profile = EducationProfile(
-            country=self.country, 
             age=self.age
         ).generate_education_profile()
 
@@ -52,19 +54,16 @@ class PersonProfile:
         # Create a 2-column DataFrame for better Streamlit display
         df = pd.DataFrame({
             'Category': [
-                'Name', 'Birth Year', 'Age', 'Age Group', 'Gender',
-                'Country', 'Languages',
+                'Name', 'Age', 'Gender',
+                'Country',
                 'Education Level', 'Major', 'School Type',
                 'Career Pathway', 'Career Level', 'Job Title'
             ],
             'Value': [
                 f"{self.first_name} {self.last_name}",
-                self.birth_year,
                 self.age,
-                self.age_group,
                 self.gender,
                 self.country,
-                location_data['countries'][self.country]['languages'],
                 self.education_profile["education_level"],
                 self.education_profile["major_field"],
                 self.education_profile["school_type"],
@@ -75,6 +74,3 @@ class PersonProfile:
         })
         
         return df
-
-
-

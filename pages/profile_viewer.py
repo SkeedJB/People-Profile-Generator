@@ -13,7 +13,6 @@ def display_profile(profile):
     st.write(f"Age: {profile['age']}")
     st.write(f"Gender: {profile['gender']}")
     st.write(f"Location: {profile['location']}")
-    st.write(f"Birth Year: {profile['birth_year']}")
     
     st.header("Education")
     st.write(f"Education Level: {profile['education_level']}")

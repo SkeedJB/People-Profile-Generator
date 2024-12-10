@@ -70,7 +70,6 @@ def generate_profiles():
             'age': person.age,
             'gender': person.gender,
             'location': person.country,
-            'birth_year': person.birth_year,
             'education_level': person.education_profile['education_level'],
             'major': person.education_profile['major_field'],
             'career_pathway': person.career_profile['career_pathway'],
