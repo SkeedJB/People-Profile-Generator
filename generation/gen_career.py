@@ -6,7 +6,7 @@ class CareerProfile:
         self.age = age
         self.education_level = education_level
         self.major = major
-        
+               
     def get_career_level(self):
         # Determine career level based on education
         if self.education_level in ["High School", "Associates"]:
@@ -41,7 +41,7 @@ class CareerProfile:
 
     def generate_career_profile(self):
         # If under 18, return student profile
-        if self.age < 14 and self.age < 25:
+        if self.age >= 14 and self.age < 25:
             return {
                 "career_pathway": "Student",
                 "level": "Not Applicable", 

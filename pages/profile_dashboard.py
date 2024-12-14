@@ -39,8 +39,10 @@ def main():
                             }
                         ">
                     """, unsafe_allow_html=True)
-                    
-                    st.markdown(f"### {profile['name']}")
+
+                    st.markdown(f"### {profile['name_display']}")
+
+                    # Display the age, gender, and location
                     st.write(f"Age: {profile['age']}")
                     st.write(f"Gender: {profile['gender']}")
                     st.write(f"Location: {profile['location']}")
@@ -59,14 +61,21 @@ def main():
     if st.button("Back to Home", use_container_width=True):
         st.switch_page("home.py")
 
-
+# Generates 6 profiles
 def generate_profiles():
     profiles = []
     for i in range(6):
         person = PersonProfile()
         person.generate_person_profile()
+
+        name_display = person.full_name
+        if hasattr(person, 'full_name_romanized') and person.full_name_romanized != person.full_name:
+            name_display = f"{person.full_name} \n({person.full_name_romanized})"
+
         profile = {
-            'name': f"{person.first_name} {person.last_name}",
+            'name': person.full_name,
+            'name_display': name_display,
+            'name_romanized': person.full_name_romanized,
             'age': person.age,
             'gender': person.gender,
             'location': person.country,

@@ -6,6 +6,8 @@ from data.country_data import COUNTRIES, COUNTRY_LOCALES
 import pandas as pd
 import random
 from datetime import datetime
+from deep_translator import GoogleTranslator
+import langdetect
 
 class PersonProfile:
     def __init__(self):
@@ -20,12 +22,24 @@ class PersonProfile:
         self.gender = random.choice(profile_data["sex"])
         return self.gender
 
-    def get_name(self):
+    def get_name(self, gender):
         fake = Faker(locale=self.country_code)
-        self.first_name = fake.unique.first_name_male()
+        if gender == "male":
+            self.first_name = fake.unique.first_name_male()
+        else:
+            self.first_name = fake.unique.first_name_female()
         self.last_name = fake.unique.last_name()
-        return self.first_name, self.last_name
-    
+
+        self.full_name = f"{self.first_name} {self.last_name}"
+        self.full_name_romanized = self.full_name
+
+        # Check if the name contains any non-ASCII characters, if so, translate it to English
+        if langdetect.detect(self.full_name) != 'en':
+            translator = GoogleTranslator(source='auto', target='en')
+            self.full_name_romanized = translator.translate(self.full_name)
+
+        return self.first_name, self.last_name, self.full_name_romanized
+
     def get_age(self):
         birth_year = random.randint(profile_data["birth_range"][0], profile_data["birth_range"][1])
         self.age = datetime.now().year - birth_year
@@ -34,7 +48,7 @@ class PersonProfile:
     def generate_person_profile(self):
         self.get_country()
         self.get_gender()
-        self.get_name()
+        self.get_name(self.gender)
         self.get_age()
         # Store as instance variables
         self.education_profile = EducationProfile(
@@ -48,10 +62,12 @@ class PersonProfile:
         ).generate_career_profile()
 
     def create_dataframe(self):
-        # Call generate_person_profile first
         self.generate_person_profile()
+
+        name_display = self.full_name
+        if self.full_name_romanized != self.full_name:
+            name_display = f"{self.full_name}\n({self.full_name_romanized})"
         
-        # Create a 2-column DataFrame for better Streamlit display
         df = pd.DataFrame({
             'Category': [
                 'Name', 'Age', 'Gender',
@@ -60,7 +76,7 @@ class PersonProfile:
                 'Career Pathway', 'Career Level', 'Job Title'
             ],
             'Value': [
-                f"{self.first_name} {self.last_name}",
+                name_display,
                 self.age,
                 self.gender,
                 self.country,

@@ -10,6 +10,7 @@ def display_profile(profile):
     st.title(f"Profile: {profile['name']}")
 
     st.header("Personal Information")
+    st.write(f"Name: {profile['name_display']}")
     st.write(f"Age: {profile['age']}")
     st.write(f"Gender: {profile['gender']}")
     st.write(f"Location: {profile['location']}")
