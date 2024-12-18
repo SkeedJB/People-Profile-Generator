@@ -1,7 +1,7 @@
 from faker import Faker
 from data.person_data import profile_data
 from generation.gen_education import EducationProfile
-from generation.gen_career import CareerProfile
+from generation.gen_career import CareerGenerator
 from data.country_data import COUNTRIES, COUNTRY_LOCALES
 import pandas as pd
 import random
@@ -17,7 +17,12 @@ class PersonProfile:
         self.country = random.choice(COUNTRIES)
         self.country_code = COUNTRY_LOCALES[self.country]
         return self.country, self.country_code
-
+    
+    def get_address(self):
+        fake = Faker(locale=self.country_code)
+        self.address = fake.unique.address()
+        return self.address
+    
     def get_gender(self):
         self.gender = random.choice(profile_data["sex"])
         return self.gender
@@ -47,6 +52,7 @@ class PersonProfile:
 
     def generate_person_profile(self):
         self.get_country()
+        self.get_address()
         self.get_gender()
         self.get_name(self.gender)
         self.get_age()
@@ -55,11 +61,22 @@ class PersonProfile:
             age=self.age
         ).generate_education_profile()
 
-        self.career_profile = CareerProfile(
+        career_generator = CareerGenerator()
+        career = career_generator.generate_career(
             age=self.age,
             education_level=self.education_profile["education_level"],
             major=self.education_profile["major_field"]
-        ).generate_career_profile()
+        )
+        career_history = career_generator.generate_career_history(
+            age=self.age,
+            education_level=self.education_profile["education_level"],
+            major=self.education_profile["major_field"]
+        )
+
+        self.career_profile = {
+            "career": career,
+            "career_history": career_history
+        }
 
     def create_dataframe(self):
         self.generate_person_profile()
@@ -80,6 +97,7 @@ class PersonProfile:
                 self.age,
                 self.gender,
                 self.country,
+                self.address,
                 self.education_profile["education_level"],
                 self.education_profile["major_field"],
                 self.education_profile["school_type"],

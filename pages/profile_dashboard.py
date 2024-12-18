@@ -45,7 +45,7 @@ def main():
                     # Display the age, gender, and location
                     st.write(f"Age: {profile['age']}")
                     st.write(f"Gender: {profile['gender']}")
-                    st.write(f"Location: {profile['location']}")
+                    st.write(f"Country: {profile['country']}")
                     
                     if st.button("View Profile", key=f"view_profile_{idx}"):
                         st.session_state.selected_profile_idx = idx
@@ -78,12 +78,17 @@ def generate_profiles():
             'name_romanized': person.full_name_romanized,
             'age': person.age,
             'gender': person.gender,
-            'location': person.country,
+            'country': person.country,
+            'address': person.address,
             'education_level': person.education_profile['education_level'],
             'major': person.education_profile['major_field'],
-            'career_pathway': person.career_profile['career_pathway'],
-            'career_level': person.career_profile['level'],
-            'job_title': person.career_profile['job_title']
+            'career_history': person.career_profile['career_history'],
+            'career': person.career_profile['career'],
+            'job_title': person.career_profile['career']['position'],
+            'company': person.career_profile['career']['company'],
+            'department': person.career_profile['career']['department'],
+            'location': person.career_profile['career']['location'],
+            'years_experience': person.career_profile['career']['years_experience'],
         }
         profiles.append(profile)
     return profiles

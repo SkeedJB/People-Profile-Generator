@@ -13,16 +13,35 @@ def display_profile(profile):
     st.write(f"Name: {profile['name_display']}")
     st.write(f"Age: {profile['age']}")
     st.write(f"Gender: {profile['gender']}")
-    st.write(f"Location: {profile['location']}")
+    st.write(f"Country: {profile['country']}")
+    st.write(f"Address: {profile['address']}")
     
     st.header("Education")
     st.write(f"Education Level: {profile['education_level']}")
     st.write(f"Major: {profile['major']}")
 
     st.header("Career")
-    st.write(f"Career Pathway: {profile['career_pathway']}")
-    st.write(f"Career Level: {profile['career_level']}")
     st.write(f"Job Title: {profile['job_title']}")
+    st.write(f"Company: {profile['company']}")
+    st.write(f"Department: {profile['department']}")
+    st.write(f"Years of Experience: {profile['years_experience']}")
+    
+    st.header("Career History")
+    if profile['career_history']:
+        for job in profile['career_history']:
+            with st.expander(f"{job['position']} at {job['company']} ({job['start_year']} - {job['end_year']})"):
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.write("**Position Details:**")
+                    st.write(f"- Level: {job['level'].replace('_', ' ').title()}")
+                    st.write(f"- Department: {job['department']}")
+                    st.write(f"- Field: {job['field']}")
+                with col2:
+                    st.write("**Company Details:**")
+                    st.write(f"- Duration: {job['duration']} years")
+                    st.write(f"- Location: {job['location']}")
+    else:
+        st.write("No career history available")
 
     if st.button("Back to Dashboard"):
         st.switch_page("pages/profile_dashboard.py")
