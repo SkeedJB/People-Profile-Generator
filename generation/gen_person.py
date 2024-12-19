@@ -56,27 +56,50 @@ class PersonProfile:
         self.get_gender()
         self.get_name(self.gender)
         self.get_age()
-        # Store as instance variables
-        self.education_profile = EducationProfile(
-            age=self.age
-        ).generate_education_profile()
 
+        # Initialize EducationProfile
+        education = EducationProfile(age=self.age)
+
+        # Get education level
+        education_level = education.get_education_level()
+
+        # Get education history
+        education_history = education.generate_education_history()
+
+        # Combine into a dictionary
+        self.education_profile = {
+            "education_level": education_level,
+            "education_history": education_history,
+            "major_field": education.get_major()
+        }
+
+        # Generate Career Profile
         career_generator = CareerGenerator()
-        career = career_generator.generate_career(
+        career_data = career_generator.generate_career_history(
             age=self.age,
-            education_level=self.education_profile["education_level"],
-            major=self.education_profile["major_field"]
+            education_history=self.education_profile["education_history"]
         )
-        career_history = career_generator.generate_career_history(
-            age=self.age,
-            education_level=self.education_profile["education_level"],
-            major=self.education_profile["major_field"]
-        )
+
+        if career_data['career'] is None:
+            career_data['career'] = {
+                "position": "Unemployed",
+                "company": "N/A",
+                "department": "N/A",
+                "location": "N/A",
+                "years_experience": 0
+        }
+
 
         self.career_profile = {
-            "career": career,
-            "career_history": career_history
+            "career_history": career_data['career_history'],
+            "career": career_data['career'],
+            "job_title": career_data['career']['position'],
+            "company": career_data['career']['company'],
+            "department": career_data['career']['department'],
+            "location": career_data['career']['location'],
+            "years_experience": (career_data['career']['end_year'] - career_data['career']['start_year'])
         }
+
 
     def create_dataframe(self):
         self.generate_person_profile()
@@ -98,6 +121,7 @@ class PersonProfile:
                 self.gender,
                 self.country,
                 self.address,
+                self.education_profile["education_history"],
                 self.education_profile["education_level"],
                 self.education_profile["major_field"],
                 self.education_profile["school_type"],

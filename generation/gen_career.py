@@ -1,9 +1,10 @@
-from data.career_data import CareerData
 from faker import Faker
 from typing import Dict, List, Optional
 import random
+from datetime import datetime
 
 class CareerGenerator:
+    # Role prefixes stay consistent across levels of seniority
     ROLE_PREFIXES = {
         "entry_level": ["Junior", "Assistant", "Trainee", "Apprentice", "New Grad"],
         "mid_level": ["", "Lead", "Manager", "Supervisor"],
@@ -11,183 +12,230 @@ class CareerGenerator:
         "executive_level": ["Chief", "Executive", "Director", "Vice President of", "President"]
     }
 
+    # Expanded ROLE_DOMAINS to match education majors
     ROLE_DOMAINS = {
-        'No College Degree': [
-            ('Salesperson', 'Technician', 'Customer Service', 'Receptionist', 'Cashier'),
-            ('Retail', 'Sales', 'Customer Service'),
-            ('Reception', 'Cashier', 'Unemployed'),
+        'Engineering': [
+            ('Engineer', 'Developer', 'Technician'),
+            ('Mechanical', 'Electrical', 'Software', 'Systems'),
+            ('Engineering', 'Development', 'Operations')
         ],
         'Computer Science': [
-            ('Developer', 'Engineering', 'Technology'),
-            ('Software', 'Systems', 'Data', 'Cloud', 'Security'),
-            ('Development', 'Architecture', 'Operations', 'Infrastructure')
+            ('Developer', 'Engineer', 'Architect'),
+            ('Software', 'Systems', 'Data', 'Cloud'),
+            ('Development', 'Engineering', 'Architecture')
+        ],
+        'Medicine': [
+            ('Doctor', 'Physician', 'Specialist'),
+            ('Medical', 'Clinical', 'Research'),
+            ('Medicine', 'Healthcare', 'Practice')
         ],
         'Business': [
-            ('Manager', 'Analyst', 'Consultant', 'Strategist'),
-            ('Business', 'Operations', 'Strategy', 'Sales'),
-            ('Development', 'Operations', 'Growth', 'Transformation')
+            ('Manager', 'Analyst', 'Consultant'),
+            ('Business', 'Operations', 'Strategy'),
+            ('Management', 'Operations', 'Development')
+        ],
+        'Education': [
+            ('Teacher', 'Instructor', 'Educator'),
+            ('Education', 'Training', 'Learning'),
+            ('Development', 'Instruction', 'Coordination')
+        ],
+        'Law': [
+            ('Lawyer', 'Attorney', 'Counsel'),
+            ('Legal', 'Corporate', 'Patent'),
+            ('Law', 'Litigation', 'Compliance')
         ],
         'Psychology': [
-            ('Counselor', 'Therapist', 'Psychologist', 'Researcher'),
-            ('Clinical', 'Behavioral', 'Cognitive', 'Research'),
-            ('Psychology', 'Health', 'Wellness', 'Development')
+            ('Psychologist', 'Counselor', 'Therapist'),
+            ('Clinical', 'Organizational', 'Research'),
+            ('Psychology', 'Counseling', 'Therapy')
         ],
-        'Graphic Design': [
-            ('Designer', 'Art Director', 'Creative Director', 'Visual Designer'),
-            ('Graphic', 'UI/UX', 'Visual', 'Branding', 'Illustration'),
-            ('Design', 'Illustration', 'Branding', 'Packaging', 'Print')
+        'Marketing': [
+            ('Marketer', 'Strategist', 'Manager'),
+            ('Digital', 'Brand', 'Product'),
+            ('Marketing', 'Communications', 'Strategy')
         ],
         'Accounting': [
-            ('Accountant', 'Bookkeeper', 'Auditor', 'Tax Preparer'),
-            ('Financial', 'Cost', 'Audit', 'Tax'),
-            ('Director', 'Vice President', 'Chief')
+            ('Accountant', 'Auditor', 'Controller'),
+            ('Financial', 'Tax', 'Corporate'),
+            ('Accounting', 'Finance', 'Compliance')
         ],
-        'Economics': [
-            ('Economist', 'Financial Analyst', 'Market Researcher', 'Policy Analyst'),
-            ('Head', 'Financial', 'Lead', 'Policy'),
-            ('Analysis', 'Research', 'Forecasting', 'Consulting')
+        'Information Technology': [
+            ('Developer', 'Administrator', 'Engineer'),
+            ('IT', 'Systems', 'Network'),
+            ('Development', 'Administration', 'Support')
         ],
-        'Political Science': [
-            ('Political Analyst', 'Policy Researcher', 'Public Relations Specialist', 'Strategist'),
-            ('Political', 'Policy', 'Public', 'Strategic'),
-            ('Analysis', 'Research', 'Consulting', 'Strategic')
+        'Pharmacy': [
+            ('Pharmacist', 'Researcher', 'Specialist'),
+            ('Clinical', 'Research', 'Retail'),
+            ('Pharmacy', 'Healthcare', 'Development')
         ],
-        'International Relations': [
-            ('Diplomat', 'International Relations Specialist', 'Foreign Policy Analyst', 'Strategist'),
-            ('Diplomatic', 'International', 'Foreign', 'Strategic'),
-            ('Relations', 'Policy', 'Consulting', 'Strategic')
+        'Literature': [
+            ('Writer', 'Editor', 'Researcher'),
+            ('Content', 'Technical', 'Creative'),
+            ('Writing', 'Publishing', 'Communications')
+        ],
+        'Science': [
+            ('Scientist', 'Researcher', 'Analyst'),
+            ('Research', 'Laboratory', 'Data'),
+            ('Science', 'Research', 'Development')
         ]
     }
 
-    DEPARTMENT_SUFFIXES = [
-        "Department", 
-        "Division",  
-        "Section", 
-        "Team", 
-        "Group", 
-        "Office", 
-        "Service",
-    ]
-
-
     def __init__(self, seed=None):
-        self.faker = Faker(seed=seed)
+        self.faker = Faker()
         if seed:
             Faker.seed(seed)
             random.seed(seed)
+        self.current_year = datetime.now().year
+
+    def _can_switch_careers(self, education_level: str) -> bool:
+        """Determine if career switching is possible based on education"""
+        switch_probabilities = {
+            "High School": 0.1,
+            "Associates": 0.2,
+            "Bachelors": 0.3,
+            "Masters": 0.4,
+            "Doctorate": 0.5
+        }
+        return random.random() < switch_probabilities.get(education_level, 0)
+
+    def _get_career_level(self, years_experience: int, education_level: str) -> str:
+        """Determine career level based on experience and education"""
+        if education_level == "High School":
+            if years_experience < 5:
+                return "entry_level"
+            elif years_experience < 10:
+                return "mid_level"
+            return "senior_level"
+        
+        if education_level in ["Associates", "Bachelors"]:
+            if years_experience < 3:
+                return "entry_level"
+            elif years_experience < 8:
+                return "mid_level"
+            elif years_experience < 15:
+                return "senior_level"
+            return "executive_level"
+        
+        if education_level in ["Masters", "Doctorate"]:
+            if years_experience < 2:
+                return "entry_level"
+            elif years_experience < 5:
+                return "mid_level"
+            elif years_experience < 10:
+                return "senior_level"
+            return "executive_level"
+        
+        return "entry_level"
+    
+    def _generate_department(self, field: str) -> str:
+        departments = {
+            "Engineering": ["Research and Development", "Quality Control", "Production", "Maintenance", "Safety", "Environmental"],
+            "Computer Science": ["Software Development", "Data Science", "Cybersecurity", "AI and Machine Learning", "Web Development", "Mobile Development"],
+            "Medicine": ["Clinical", "Research", "Pharmaceutical", "Healthcare", "Public Health"],
+            "Business": ["Sales", "Marketing", "Operations", "Finance", "Human Resources", "Legal", "Customer Service"],
+            "Education": ["Teaching", "Administration", "Curriculum Development", "Student Services", "Research"],
+            "Law": ["Litigation", "Corporate", "Intellectual Property", "Real Estate", "Tax"],
+            "Psychology": ["Clinical", "Organizational", "Research", "Forensic", "Educational"],
+            "Marketing": ["Digital Marketing", "Brand Management", "Product Marketing", "Advertising", "Market Research"],
+            "Accounting": ["Audit", "Tax", "Financial Planning", "Risk Management", "Compliance"],
+            "Information Technology": ["Software Development", "Network Administration", "Cybersecurity", "Data Analytics", "Cloud Computing"],
+            "Pharmacy": ["Clinical", "Pharmaceutical", "Research", "Retail", "Public Health"],
+            "Literature": ["Creative Writing", "Editing", "Publishing", "Literature Review", "Literary Criticism"],
+            "Science": ["Laboratory", "Research", "Data Analysis", "Scientific Writing", "Scientific Communication"]
+        }
+        return random.choice(departments.get(field, ["General"]))
 
     def _generate_position_title(self, level: str, domain: str) -> str:
-        if level == "none" or domain not in self.ROLE_DOMAINS:
-            return "Unemployed"
+        """Generate a position title based on level and domain"""
+        if domain not in self.ROLE_DOMAINS:
+            # Handle career switchers or undefined domains
+            domain = random.choice(list(self.ROLE_DOMAINS.keys()))
         
         prefix = random.choice(self.ROLE_PREFIXES[level])
         domain_parts = self.ROLE_DOMAINS[domain]
         
+        if level == "executive_level" and random.random() < 0.3:
+            return f"Chief {random.choice(domain_parts[0])} Officer"
+        
         components = [random.choice(part) for part in domain_parts]
-        if level == "executive_level":
-            if random.random() < 0.3:
-                return f"Chief {components[0]} Officer"
-            
-        if prefix:
-            patterns = [
-                f"{prefix} {components[0]}",
-                f"{prefix} {components[1]} {components[0]}",
-                f"{prefix} {components[2]} {components[0]}"
-            ]
-        else:
-            patterns = [
-                f"{components[1]} {components[0]}",
-                f"{components[2]} {components[0]}",
-                f"{components[1]} {components[2]} {components[0]}"
-            ]
-        
-        return random.choice(patterns)
-               
-    def _get_career_level(self, age: int, education_level: str) -> str:
-        """Determine career level based on age and education"""
-        if age < 18 or education_level in ["Not in school yet", "Elementary School", "Middle School"]:
-            return "none"
+        return f"{prefix} {components[1]} {components[0]}" if prefix else f"{components[1]} {components[0]}"
 
-        years_experience = age - 18
-        education_weights = {
-            "High School": {"entry_level": 0.9, "mid_level": 0.1},
-            "Associates": {"entry_level": 0.7, "mid_level": 0.3},
-            "Bachelors": {"entry_level": 0.3, "mid_level": 0.5, "senior_level": 0.2},
-            "Masters": {"mid_level": 0.4, "senior_level": 0.5, "executive_level": 0.1},
-            "Doctorate": {"senior_level": 0.6, "executive_level": 0.4}
-        }
-
-        if education_level not in education_weights:
-            return "none"
-
-        # Adjust weights based on years of experience
-        weights = education_weights[education_level].copy()
-        if years_experience > 15:
-            weights["executive_level"] = weights.get("executive_level", 0) + 0.3
-        elif years_experience > 10:
-            weights["senior_level"] = weights.get("senior_level", 0) + 0.3
-        elif years_experience > 5:
-            weights["mid_level"] = weights.get("mid_level", 0) + 0.2
-
-        # Normalize weights
-        total = sum(weights.values())
-        weights = {k: v/total for k, v in weights.items()}
-
-        return random.choices(list(weights.keys()), list(weights.values()))[0]
-
-    def generate_career(self, age: int, education_level: str, major: str) -> Optional[Dict]:
-        """Generate a complete career profile"""
-        level = self._get_career_level(age, education_level)
-        if level == "none":
-            return None
-
-        position = self._generate_position_title(level, major)
-        company_name = self.faker.company()
-        
-        career = {
-            "position": position,
-            "company": company_name,
-            "level": level,
-            "field": major,
-            "years_experience": max(0, age - 18),
-            "department": f"{random.choice(self.ROLE_DOMAINS[major][1])} {random.choice(self.DEPARTMENT_SUFFIXES)}",
-        }
-
-        # Optional: Add company industry, size, etc. using Faker
-        if random.random() < 0.3:  # 30% chance to be remote
-            career["location"] = "Remote"
-        else:
-            career["location"] = self.faker.city()
-
-        return career
-
-    def generate_career_history(self, age: int, education_level: str, major: str) -> List[Dict]:
-        """Generate a person's career history"""
-        if age < 18:
-            return []
-
-        years_working = age - 18
-        num_jobs = min(1 + years_working // 3, 5)  # Average job change every 3 years, max 5 jobs
+    def generate_career_history(self, education_history: List[Dict], age: int) -> Dict:
+        """Generate career history based on education timeline"""
+        if not education_history or age < 18:
+            return {
+                'career_history': [],
+                'career': None
+            }
         
         history = []
+        
+        # Find the latest education completion
+        latest_education = max(
+            (edu for edu in education_history if not edu["is_current"]), 
+            key=lambda x: x["end_year"],
+            default=None
+        )
+        
+        if not latest_education:
+            return []
+
+        career_start_year = latest_education["end_year"]
+        years_working = self.current_year - career_start_year
+        
+        if years_working <= 0:
+            return []
+
+        # Determine number of job changes
+        avg_job_duration = 3  # Average job duration in years
+        max_jobs = min(5, years_working // 2)  # Maximum 5 jobs, minimum 2 years per job
+        num_jobs = random.randint(1, max_jobs)
+        
         remaining_years = years_working
+        current_domain = latest_education.get("major", random.choice(list(self.ROLE_DOMAINS.keys())))
         
         for i in range(num_jobs):
-            job_length = min(
-                random.randint(1, 5) if i < num_jobs - 1 else remaining_years,
-                remaining_years
-            )
+            # Determine job duration
+            if i == num_jobs - 1:  # Last job extends to present
+                job_length = remaining_years
+            else:
+                job_length = min(
+                    random.randint(2, 5),
+                    remaining_years - (num_jobs - i - 1) * 2  # Ensure at least 2 years for remaining jobs
+                )
             
-            career = self.generate_career(
-                age=age - (years_working - remaining_years),
-                education_level=education_level,
-                major=major
-            )
+            # Calculate years of experience at this point
+            years_experience = years_working - remaining_years
             
-            if career:
-                career["duration"] = job_length
-                career["start_year"] = 2024 - remaining_years
-                career["end_year"] = career["start_year"] + job_length
-                history.append(career)
+            # Possibility of career switch
+            if self._can_switch_careers(latest_education["level"]):
+                current_domain = random.choice(list(self.ROLE_DOMAINS.keys()))
             
+            # Generate job entry
+            level = self._get_career_level(years_experience, latest_education["level"])
+            
+            job = {
+                "position": self._generate_position_title(level, current_domain),
+                "company": self.faker.company(),
+                "field": current_domain,
+                "level": level,
+                "start_year": career_start_year + (years_working - remaining_years),
+                "end_year": career_start_year + (years_working - remaining_years) + job_length,
+                "duration": job_length,
+                "location": "Remote" if random.random() < 0.3 else self.faker.city(),
+            }
+            
+            history.append(job)
             remaining_years -= job_length
+
+            for job in history:
+                job['department'] = self._generate_department(job['field'])
+        return {
+            'career_history': history,
+            'career': history[-1] if history else None  # Current job is last in history
+        }
+
+    def get_current_career(self, career_history: List[Dict]) -> Optional[Dict]:
+        """Get the current career position from history"""
+        return career_history[-1] if career_history else None

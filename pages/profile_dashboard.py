@@ -81,14 +81,15 @@ def generate_profiles():
             'country': person.country,
             'address': person.address,
             'education_level': person.education_profile['education_level'],
+            'education_history': person.education_profile['education_history'],  # Ensure this is included
             'major': person.education_profile['major_field'],
             'career_history': person.career_profile['career_history'],
             'career': person.career_profile['career'],
-            'job_title': person.career_profile['career']['position'],
-            'company': person.career_profile['career']['company'],
-            'department': person.career_profile['career']['department'],
-            'location': person.career_profile['career']['location'],
-            'years_experience': person.career_profile['career']['years_experience'],
+            'job_title': person.career_profile['career']['position'] if person.career_profile['career'] else "N/A",
+            'company': person.career_profile['career']['company'] if person.career_profile['career'] else "N/A",
+            'department': person.career_profile['career']['department'] if person.career_profile['career'] else "N/A",
+            'location': person.career_profile['career']['location'] if person.career_profile['career'] else "N/A",
+            'years_experience': person.career_profile['years_experience']
         }
         profiles.append(profile)
     return profiles

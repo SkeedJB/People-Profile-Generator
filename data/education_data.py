@@ -11,7 +11,6 @@ education_data = {
             "Masters",
             "Doctorate"
         ],
-        "school_types": ["High School", "College", "University"],
         "major_fields": [
             "Computer Science",
             "Business", 
@@ -23,6 +22,13 @@ education_data = {
             "International Relations"
         ]
     },
+    "school_types": [
+        "Public",
+        "Private",
+        "Charter",
+        "Home School",
+        "Online"
+    ],
 
     "degree_requirements": {
         "Not in school yet": {
