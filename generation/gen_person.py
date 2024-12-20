@@ -128,31 +128,3 @@ class PersonProfile:
             "department": career_info['career']['department'],
             "years_experience": career_info['career']['years_experience']
         }
-
-    def create_dataframe(self):
-        name_display = self.full_name
-        if self.full_name_romanized != self.full_name:
-            name_display = f"{self.full_name}\n({self.full_name_romanized})"
-        
-        df = pd.DataFrame({
-            'Category': [
-                'Name', 'Age', 'Gender', 'Country', 'Address',
-                'Education Level', 'Major', 'Current Position',
-                'Company', 'Department', 'Years Experience'
-            ],
-            'Value': [
-                name_display,
-                self.age,
-                self.gender,
-                self.country,
-                self.address,
-                self.education_profile["education_level"],
-                self.education_profile["major_field"],
-                self.career_profile["job_title"],
-                self.career_profile["company"],
-                self.career_profile["department"],
-                self.career_profile["years_experience"]
-            ]
-        })
-        
-        return df

@@ -1,10 +1,9 @@
 import sys
 import streamlit as st
 from faker import Faker
-sys.path.append(".")  # Add the project root to Python path
+import random
 from generation.gen_person import PersonProfile
-
-st.set_page_config(layout="wide")
+from pages.profile_dashboard import generate_selected_profile  # Import the parent profile generator
 
 def display_profile(profile):
     fake = Faker()
@@ -35,10 +34,10 @@ def display_profile(profile):
     st.header("Current Career:")
     current_career = profile.get('career', None)
     if current_career:
-        st.write(f"Position: {current_career['position']}")
-        st.write(f"Company: {current_career['company']}")
-        st.write(f"Department: {current_career['department']}")
-        st.write(f"Years Experience: {current_career['duration']}")
+        st.write(f"Position: {current_career.get('position', 'N/A')}")
+        st.write(f"Company: {current_career.get('company', 'N/A')}")
+        st.write(f"Department: {current_career.get('department', 'N/A')}")
+        st.write(f"Years Experience: {current_career.get('years_experience', 'N/A')}")
     else:
         st.write("Unemployed or no career history.")
     
@@ -59,6 +58,42 @@ def display_profile(profile):
     else:
         st.write("No career history available")
 
+    # Display Parents
+    st.header("Parents")
+    parent_metadata_list = profile.get('parents', [])
+    if parent_metadata_list:
+        for idx, parent_metadata in enumerate(parent_metadata_list):
+            relation = parent_metadata.get('relation', 'Parent')
+            st.markdown(f"### {relation.capitalize()}")
+            
+            # Button to view parent profile
+            if st.button(f"View {relation.capitalize()}", key=f"view_parent_{profile['uuid']}_{idx}"):
+                # Generate parent profile based on constraints
+                parent_profile = generate_selected_profile(parent_metadata['constraints'])
+                # Store the parent profile in session state
+                st.session_state.profiles[parent_profile['uuid']] = parent_profile
+                # Set the newly generated parent as selected
+                st.session_state.selected_profile_uuid = parent_profile['uuid']
+                st.rerun()  # Refresh the page to display the new profile
+    else:
+        st.write("No parents assigned.")
+
+    # Save Profile Button
+    st.header("Save Profile")
+    if profile['uuid'] in st.session_state.get('saved_profiles', {}):
+        st.success("Profile saved!")
+        if st.button("Remove from Saved"):
+            del st.session_state.saved_profiles[profile['uuid']]
+            st.success("Profile removed from saved!")
+    else:
+        if st.button("Save Profile"):
+            if 'saved_profiles' not in st.session_state:
+                st.session_state.saved_profiles = {}
+            st.session_state.saved_profiles[profile['uuid']] = profile
+            st.success("Profile saved!")
+
+    # Navigation Buttons
+    st.header("Navigation")
     if st.button("Back to Dashboard"):
         st.switch_page("pages/profile_dashboard.py")
 
@@ -66,16 +101,28 @@ def display_profile(profile):
         st.switch_page("home.py")
 
 def main():
-    if ("selected_profile_idx" not in st.session_state or 
-        "profiles" not in st.session_state or 
-        st.session_state.selected_profile_idx >= len(st.session_state.profiles) or
-        st.session_state.profiles[st.session_state.selected_profile_idx] is None):
-        
-        st.error("No profile selected or profile data is invalid. Please select a profile from the home page.")
-        if st.button("Back to Home"):
-            st.switch_page("home.py")
+    # Ensure profiles are initialized
+    if 'profiles' not in st.session_state:
+        st.session_state.profiles = {}
+    
+    # Check if a profile is selected
+    if "selected_profile_uuid" not in st.session_state or not st.session_state.selected_profile_uuid:
+        st.error("No profile selected. Please navigate from the dashboard.")
+        if st.button("Back to Dashboard"):
+            st.switch_page("pages/profile_dashboard.py")
+        return
+    
+    selected_uuid = st.session_state.selected_profile_uuid
+    profiles = st.session_state.profiles
+    
+    # Check if the selected profile exists
+    if selected_uuid in profiles:
+        profile = profiles[selected_uuid]
+        display_profile(profile)
     else:
-        display_profile(st.session_state.profiles[st.session_state.selected_profile_idx])
+        st.error("Selected profile does not exist.")
+        if st.button("Back to Dashboard"):
+            st.switch_page("pages/profile_dashboard.py")
 
 if __name__ == "__main__":
     main()

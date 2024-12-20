@@ -5,8 +5,12 @@ st.set_page_config(layout="wide")
 def main():
     # Initialize session state if not already done
     if 'profiles' not in st.session_state:
-        st.session_state.profiles = []
-        
+        st.session_state.profiles = {}
+    if 'current_view' not in st.session_state:
+        st.session_state.current_view = 'home'
+    if 'selected_profile_uuid' not in st.session_state:
+        st.session_state.selected_profile_uuid = None
+
     # Header
     st.markdown("""
         <h1 style='text-align: center; color: #2e6c80;'>
@@ -35,11 +39,10 @@ def main():
 
     st.markdown("<br>", unsafe_allow_html=True)
     
-    button_container = st.container(border=True)
+    button_container = st.container()
     with button_container:
         if st.button("Go to Dashboard", use_container_width=True):
             st.switch_page("pages/profile_dashboard.py")
-
 
 if __name__ == "__main__":
     main()
