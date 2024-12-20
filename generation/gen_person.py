@@ -10,21 +10,43 @@ from deep_translator import GoogleTranslator
 import langdetect
 
 class PersonProfile:
-    def __init__(self):
-        pass
+    def __init__(self, filters=None):
+        """
+        Initialize PersonProfile with optional filters
+        filters: dict of attributes to filter by, e.g., 
+        {
+            'country': 'USA',
+            'gender': 'female',
+            'age_range': (25, 35),
+            'education_level': 'Bachelor'
+        }
+        """
+        self.filters = filters or {}
 
     def get_country(self):
-        self.country = random.choice(COUNTRIES)
+        if 'country' in self.filters:
+            self.country = self.filters['country']
+        else:
+            self.country = random.choice(COUNTRIES)
         self.country_code = COUNTRY_LOCALES[self.country]
         return self.country, self.country_code
     
     def get_address(self):
         fake = Faker(locale=self.country_code)
         self.address = fake.unique.address()
+        self.address = self.address.replace('\n', '\n')
+
+        # Format the address to be more readable
+        if langdetect.detect(self.address) != 'en':
+            translator = GoogleTranslator(source='auto', target='en')
+            self.address = translator.translate(self.address)
         return self.address
     
     def get_gender(self):
-        self.gender = random.choice(profile_data["sex"])
+        if 'gender' in self.filters:
+            self.gender = self.filters['gender']
+        else:
+            self.gender = random.choice(profile_data["sex"])
         return self.gender
 
     def get_name(self, gender):
@@ -46,10 +68,15 @@ class PersonProfile:
         return self.first_name, self.last_name, self.full_name_romanized
 
     def get_age(self):
-        birth_year = random.randint(profile_data["birth_range"][0], profile_data["birth_range"][1])
+        if 'age_range' in self.filters:
+            min_age, max_age = self.filters['age_range']
+            birth_year = datetime.now().year - random.randint(min_age, max_age)
+        else:
+            birth_year = random.randint(profile_data["birth_range"][0], profile_data["birth_range"][1])
         self.age = datetime.now().year - birth_year
         return self.age
 
+    # Uses all the functions to generate a person profile
     def generate_person_profile(self):
         self.get_country()
         self.get_address()
@@ -57,8 +84,12 @@ class PersonProfile:
         self.get_name(self.gender)
         self.get_age()
 
-        # Initialize EducationProfile
-        education = EducationProfile(age=self.age)
+        # Initialize EducationProfile with relevant filters
+        education_filters = {
+            'education_level': self.filters.get('education_level'),
+            'major_field': self.filters.get('major_field')
+        }
+        education = EducationProfile(age=self.age, filters=education_filters)
 
         # Get education level
         education_level = education.get_education_level()
@@ -75,45 +106,39 @@ class PersonProfile:
 
         # Generate Career Profile
         career_generator = CareerGenerator()
-        career_data = career_generator.generate_career_history(
+        career_info = career_generator.generate_career_history(
             age=self.age,
             education_history=self.education_profile["education_history"]
         )
-
-        if career_data['career'] is None:
-            career_data['career'] = {
+        if career_info['career'] is None:
+            career_info['career'] = {
                 "position": "Unemployed",
                 "company": "N/A",
                 "department": "N/A",
                 "location": "N/A",
                 "years_experience": 0
         }
-
+        career_info['career']['years_experience'] = 0
 
         self.career_profile = {
-            "career_history": career_data['career_history'],
-            "career": career_data['career'],
-            "job_title": career_data['career']['position'],
-            "company": career_data['career']['company'],
-            "department": career_data['career']['department'],
-            "location": career_data['career']['location'],
-            "years_experience": (career_data['career']['end_year'] - career_data['career']['start_year'])
+            "career_history": career_info['career_history'],
+            "career": career_info['career'],
+            "job_title": career_info['career']['position'],
+            "company": career_info['career']['company'],
+            "department": career_info['career']['department'],
+            "years_experience": career_info['career']['years_experience']
         }
 
-
     def create_dataframe(self):
-        self.generate_person_profile()
-
         name_display = self.full_name
         if self.full_name_romanized != self.full_name:
             name_display = f"{self.full_name}\n({self.full_name_romanized})"
         
         df = pd.DataFrame({
             'Category': [
-                'Name', 'Age', 'Gender',
-                'Country',
-                'Education Level', 'Major', 'School Type',
-                'Career Pathway', 'Career Level', 'Job Title'
+                'Name', 'Age', 'Gender', 'Country', 'Address',
+                'Education Level', 'Major', 'Current Position',
+                'Company', 'Department', 'Years Experience'
             ],
             'Value': [
                 name_display,
@@ -121,13 +146,12 @@ class PersonProfile:
                 self.gender,
                 self.country,
                 self.address,
-                self.education_profile["education_history"],
                 self.education_profile["education_level"],
                 self.education_profile["major_field"],
-                self.education_profile["school_type"],
-                self.career_profile["career_pathway"],
-                self.career_profile["level"],
-                self.career_profile["job_title"]
+                self.career_profile["job_title"],
+                self.career_profile["company"],
+                self.career_profile["department"],
+                self.career_profile["years_experience"]
             ]
         })
         

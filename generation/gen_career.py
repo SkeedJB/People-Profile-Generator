@@ -2,6 +2,8 @@ from faker import Faker
 from typing import Dict, List, Optional
 import random
 from datetime import datetime
+from countryinfo import CountryInfo
+import pycountry
 
 class CareerGenerator:
     # Role prefixes stay consistent across levels of seniority
@@ -127,7 +129,7 @@ class CareerGenerator:
             return "executive_level"
         
         return "entry_level"
-    
+
     def _generate_department(self, field: str) -> str:
         departments = {
             "Engineering": ["Research and Development", "Quality Control", "Production", "Maintenance", "Safety", "Environmental"],
@@ -168,33 +170,37 @@ class CareerGenerator:
                 'career_history': [],
                 'career': None
             }
-        
+
         history = []
-        
+
         # Find the latest education completion
         latest_education = max(
             (edu for edu in education_history if not edu["is_current"]), 
             key=lambda x: x["end_year"],
             default=None
         )
-        
         if not latest_education:
-            return []
+            return {
+                'career_history': [],
+                'career': None
+            }
 
         career_start_year = latest_education["end_year"]
         years_working = self.current_year - career_start_year
-        
+
         if years_working <= 0:
-            return []
+            return {
+                'career_history': [],
+                'career': None
+            }
 
         # Determine number of job changes
-        avg_job_duration = 3  # Average job duration in years
-        max_jobs = min(5, years_working // 2)  # Maximum 5 jobs, minimum 2 years per job
+        max_jobs = max(1, min(5, years_working // 2))  # Atleast 1 job, maximum 5 jobs, minimum 2 years per job
         num_jobs = random.randint(1, max_jobs)
-        
+
         remaining_years = years_working
         current_domain = latest_education.get("major", random.choice(list(self.ROLE_DOMAINS.keys())))
-        
+
         for i in range(num_jobs):
             # Determine job duration
             if i == num_jobs - 1:  # Last job extends to present
@@ -204,17 +210,17 @@ class CareerGenerator:
                     random.randint(2, 5),
                     remaining_years - (num_jobs - i - 1) * 2  # Ensure at least 2 years for remaining jobs
                 )
-            
+
             # Calculate years of experience at this point
             years_experience = years_working - remaining_years
-            
+
             # Possibility of career switch
             if self._can_switch_careers(latest_education["level"]):
                 current_domain = random.choice(list(self.ROLE_DOMAINS.keys()))
-            
+
             # Generate job entry
             level = self._get_career_level(years_experience, latest_education["level"])
-            
+
             job = {
                 "position": self._generate_position_title(level, current_domain),
                 "company": self.faker.company(),
@@ -223,14 +229,14 @@ class CareerGenerator:
                 "start_year": career_start_year + (years_working - remaining_years),
                 "end_year": career_start_year + (years_working - remaining_years) + job_length,
                 "duration": job_length,
-                "location": "Remote" if random.random() < 0.3 else self.faker.city(),
             }
-            
+
             history.append(job)
             remaining_years -= job_length
 
-            for job in history:
-                job['department'] = self._generate_department(job['field'])
+        for job in history:
+            job['department'] = self._generate_department(job['field'])
+
         return {
             'career_history': history,
             'career': history[-1] if history else None  # Current job is last in history

@@ -16,7 +16,13 @@ COUNTRIES = [
     "India",
     "Philippines",
     "United Arab Emirates",
-    "Japan"
+    "Japan",
+    "Vietnam",
+    "Ukraine",
+    "Thailand",
+    "Indonesia",
+    "Netherlands",
+    "Belgium"
 ]
 
 COUNTRY_LOCALES = {
@@ -34,5 +40,11 @@ COUNTRY_LOCALES = {
     "India": "hi_IN",
     "Philippines": "en_PH",
     "United Arab Emirates": "ar_AE",
-    "Japan": "ja_JP"
+    "Japan": "ja_JP",
+    "Vietnam": "vi_VN",
+    "Thailand": "th_TH",
+    "Indonesia": "id_ID",
+    "Netherlands": "nl_NL",
+    "Belgium": "nl_BE",
+    "Ukraine": "uk_UA"
 }

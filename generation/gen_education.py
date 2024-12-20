@@ -6,12 +6,21 @@ from typing import Dict, List
 from datetime import datetime
 
 class EducationProfile:
-    def __init__(self, age):
+    def __init__(self, age, filters=None):
         self.age = age
         self.current_year = datetime.now().year
+        self.filters = filters or {}
 
     def get_education_level(self):
-        # Determines the minimum level based on age
+        # Check if education level is specified in filters
+        if self.filters.get('education_level'):
+            # Verify age meets minimum requirements
+            required_age = education_data["degree_requirements"][self.filters['education_level']]["min_age"]
+            if self.age >= required_age:
+                return self.filters['education_level']
+            # If too young for filtered education level, fall back to age-appropriate level
+        
+        # Original education level logic
         base_level = "No Schooling"
         for level in education_data["education_systems"]["education_levels"]:
             if self.age >= education_data["degree_requirements"][level]["min_age"]:
@@ -43,6 +52,9 @@ class EducationProfile:
 
   # Gets major based on region
     def get_major(self):
+        # Check if major field is specified in filters
+        if self.filters.get('major_field'):
+            return self.filters['major_field']
         return random.choice(education_data["education_systems"]["major_fields"])
     
     def get_school_type(self):
@@ -103,13 +115,18 @@ class EducationProfile:
         # Higher Education with same structure as before but with new fields
         if highest_level in ["Associates", "Bachelors", "Masters", "Doctorate"]:
             current_age = 19
+            degree_durations = {
+                "Associates": 2,
+                "Bachelors": 4,
+                "Masters": 2,
+                "Doctorate": 4
+            }
             for level in ["Associates", "Bachelors", "Masters", "Doctorate"]:
                 if level == highest_level:
                     break
                 if random.random() < 0.2:
                     current_age += 1
-                duration = education_data["degree_requirements"][level]["min_age"] - \
-                        education_data["degree_requirements"][level]["max_age"]
+                duration = degree_durations[level]
                 entry = add_education_entry(level, current_age, duration)
                 if entry and history and random.random() < 0.3:
                     entry["field_of_study"] = history[-1]["field_of_study"]

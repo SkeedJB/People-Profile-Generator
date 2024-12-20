@@ -16,7 +16,8 @@ def display_profile(profile):
     st.write(f"Gender: {profile.get('gender', 'N/A')}")
     st.write(f"Country: {profile.get('country', 'N/A')}")
     st.write(f"Address: {profile.get('address', 'N/A')}")
-    
+
+    # Education Information
     st.header("Education")
     education_history = profile.get('education_history', [])
     if education_history:
@@ -30,13 +31,13 @@ def display_profile(profile):
     else:
         st.write("No education history available")
 
+    # Career Information
     st.header("Current Career:")
     current_career = profile.get('career', None)
     if current_career:
         st.write(f"Position: {current_career['position']}")
         st.write(f"Company: {current_career['company']}")
         st.write(f"Department: {current_career['department']}")
-        st.write(f"Location: {current_career['location']}")
         st.write(f"Years Experience: {current_career['duration']}")
     else:
         st.write("Unemployed or no career history.")

@@ -1,9 +1,12 @@
 import streamlit as st
 from generation.gen_person import PersonProfile
-
 st.set_page_config(layout="wide")
 
 def main():
+    # Initialize session state if not already done
+    if 'profiles' not in st.session_state:
+        st.session_state.profiles = []
+        
     # Header
     st.markdown("""
         <h1 style='text-align: center; color: #2e6c80;'>
@@ -34,8 +37,9 @@ def main():
     
     button_container = st.container(border=True)
     with button_container:
-        if st.button("Generate Profiles", use_container_width=True):
+        if st.button("Go to Dashboard", use_container_width=True):
             st.switch_page("pages/profile_dashboard.py")
+
 
 if __name__ == "__main__":
     main()
