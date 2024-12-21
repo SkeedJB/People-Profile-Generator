@@ -221,7 +221,17 @@ def profile_dashboard():
     columns_per_row = 3
 
     if request.method == 'POST':
-        # Replace Streamlit inputs with form data
+        # Check if this is a remove profile request
+        if 'remove_profile' in request.form:
+            profile_uuid = request.form['remove_profile']
+            if profile_uuid in PROFILES:
+                del PROFILES[profile_uuid]
+            return redirect(url_for('profile_dashboard'))
+        if 'remove_all_profiles' in request.form:
+            PROFILES.clear()
+            return redirect(url_for('profile_dashboard'))
+
+        # Otherwise handle profile generation as before
         form = request.form
         selected_country = form.get("selected_country", "All")
         selected_gender = form.get("selected_gender", "All")

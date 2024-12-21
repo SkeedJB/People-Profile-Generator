@@ -7,20 +7,44 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="../static/css/styles.css">
 </head>
-<body>
-    <!-- Dark Navigation Bar at top of page-->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand ms-3" href="{{ url_for('home') }}">Home</a>
-        <a class="nav-link text-light" href="{{ url_for('profile_dashboard') }}">Dashboard </a>
-        <a class="nav-link text-light" href="{{ url_for('saved_profiles') }}">Saved Profiles</a>
+<body class="d-flex flex-column min-vh-100 bg-light">
+    <!-- Navigation with Name on left and Dashboard and Saved Profiles in center-->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #232324;">
+        <div class="container-fluid">
+            <a class="navbar-brand ms-3" href="{{ url_for('home') }}" style="font-family: 'Tinos-Bold', serif;">
+                <strong>PROFILE GENERATOR</strong>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarCollapsed" aria-controls="navbarCollapsed" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapsed">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item" style="font-family: 'DMSerifText-Regular', serif;">
+                        <a class="nav-link text-light" href="{{ url_for('profile_dashboard') }}">
+                            <i class="fas fa-th-large me-2"></i><strong>Dashboard</strong>
+                        </a>
+                    </li>
+                    <li class="nav-item mx-3" style="font-family: 'DMSerifText-Regular', serif;">
+                        <a class="nav-link text-light" href="{{ url_for('saved_profiles') }}">
+                            <i class="fas fa-star me-2"></i><strong>Saved Profiles</strong>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </nav>
 
-    <div class="container my-4">
+    <!-- Main container -->
+    <div class="container my-3 flex-grow-1">
         {% block content %}
         <!-- Content will be injected here -->
         {% endblock %}
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Font Awesome for icons -->
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
 </body>
 </html>

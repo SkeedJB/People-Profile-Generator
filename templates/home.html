@@ -1,9 +1,55 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="text-center">
-    <h1 style="font-family: 'DMSerifText-Regular', serif;">Welcome to the Profile Generator</h1>
-    <p class="lead">This tool creates realistic profiles for testing, data generation, and more.</p>
-    <a href="{{ url_for('profile_dashboard') }}" class="btn btn-primary btn-lg">Get Started</a>
+<!-- Hero Section -->
+<div class="bg-white p-5 rounded-3 shadow-sm mb-4">
+  <div class="row align-items-center">
+    <div class="col-md-6 text-center text-md-start mb-4 mb-md-0">
+      <h1 class="display-5 fw-bold mb-3" style="font-family: 'Tinos-Bold', serif;">
+        Welcome to the Profile Generator
+      </h1>
+      <p class="lead" style="font-family: 'Tinos-Regular', serif;">
+        Build realistic profiles for demo data, testing, and more. This tool uses a combination of randomized data generation with user-defined filters to create realistic fictional profiles.
+      </p>
+      <a href="{{ url_for('profile_dashboard') }}" class="btn btn-primary btn-lg mt-2"
+         style="background-color: #113754; border: none;">
+        <i class="fas fa-th-large me-2"></i>Get Started
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- More Information About Program -->
+<div class="row g-4">
+  <!-- Left column -->
+  <div class="col-md-6">
+    <div class="p-4 bg-white rounded-3 shadow-sm h-100">
+      <h3 class="mb-3" style="font-family: 'Tinos-Bold', serif;">A Professional Data Tool</h3>
+      <p style="font-family: 'Tinos-Regular', serif; font-size: 0.95rem;">
+        This application provides a robust way to create fictional yet believable identities. Whether 
+        you need test data for software systems, training materials for internal teams, or sample user 
+        accounts, our Profile Generator can help. Inspired by advanced data generation strategies, it 
+        gives you the flexibility to specify demographics like age, gender, and education—just like 
+        real intelligence gathering.
+      </p>
+    </div>
+  </div>
+  <!-- Right column -->
+  <div class="col-md-6">
+    <div class="p-4 bg-white rounded-3 shadow-sm h-100">
+      <h3 class="mb-3" style="font-family: 'Tinos-Bold', serif;">Security & Purpose</h3>
+      <p style="font-family: 'Tinos-Regular', serif; font-size: 0.95rem;">
+        Protecting real data is paramount. That's why this system uses only 
+        simulated identities—no personal information is involved. By practicing 
+        the principle of least exposure, you can safely test your products, 
+        APIs, or training programs without risking sensitive user data.
+      </p>
+      <p style="font-family: 'Tinos-Regular', serif; font-size: 0.95rem;">
+        <strong>Note:</strong> This project is loosely modeled after real-world 
+        intelligence frameworks, but is intended solely for demonstration 
+        and testing purposes.
+      </p>
+    </div>
+  </div>
 </div>
 {% endblock %}

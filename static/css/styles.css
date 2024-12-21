@@ -1,22 +1,117 @@
+/* ==========================================================================
+   Custom Styles
+   ========================================================================== */
+
+/* Global Body Styles */
 body {
-  background-color: #f8f8f8;
-  color: #313030;
+  background-color: #f7f7f7; /* Light grey background*/
+  color: #232324;           /* Dark text */
   font-family: 'Tinos-Regular', serif;
 }
 
+/* Headings */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Tinos-Bold', serif;
 }
 
-.fst-italic {
-  font-family: 'Tinos-Italic', serif;
+/* Smooth corners for cards and containers */
+.card, .rounded-3, .rounded-4 {
+  border-radius: 10px !important;
 }
 
-.card {
-  border-radius: 10px;
-} 
+/* Hero Image and Container */
+.bg-white {
+  background-color: #fff !important;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: #113754;
+  border-color: #113754;
+}
+.btn-primary:hover {
+  background-color: #0a2b44;
+  border-color: #0a2b44;
+}
+
+/* Navigation tweaks */
+.navbar-dark {
+  background-color: #232324 !important;
+}
+
+/* Profile Avatar adjustments */
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 3px solid #113754;
+}
+.profile-avatar[data-avatar] {
+  background-image: url("attr(data-avatar)");
+}
+
+/* Card Hover Effects */
+.hover-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.hover-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Form Controls (dark style for synergy) */
+.form-select, .form-control {
+  background-color: #eaeaea;
+  color: #232324;
+  transition: border-color 0.2s;
+  border: 1px solid #ccc;
+}
+.form-select:focus, .form-control:focus {
+  background-color: #f4f4f4;
+  border-color: #113754;
+  box-shadow: 0 0 0 0.25rem rgba(17, 55, 84, 0.25);
+}
+.form-select option {
+  background-color: #fff;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #dcdcdc;
+}
+::-webkit-scrollbar-thumb {
+  background: #113754;
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #0a2b44;
+}
+
+/* Fonts for demonstration */
 @font-face {
-  font-family: 'DMSerifText-Regular'; src: url('../fonts/DMSerifText-Regular.ttf');
-  font-family: 'DMSerifText-Italic'; src: url('../fonts/DMSerifText-Italic.ttf');
+  font-family: 'DMSerifText-Regular';
+  src: url('../fonts/DMSerifText-Regular.ttf');
+}
+@font-face {
+  font-family: 'DMSerifText-Italic';
+  src: url('../fonts/DMSerifText-Italic.ttf');
+}
+
+@font-face {
+  font-family: 'Tinos-Regular';
+  src: url('../fonts/Tinos-Regular.ttf');
+}
+@font-face {
+  font-family: 'Tinos-Bold';
+  src: url('../fonts/Tinos-Bold.ttf');
+}
+@font-face {
+  font-family: 'Tinos-Italic';
+  src: url('../fonts/Tinos-Italic.ttf');
 }
 
