@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+{% block content %}
+{% if profile %}
+  <div class="container py-4">
+    <div class="card bg-dark-transparent text-white shadow-lg border-0 rounded-4 mb-4">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-4">
+          <div class="profile-avatar me-4" 
+               data-avatar="{{ profile.avatar_url | default('/static/default-avatar.jpg') }}">
+          </div>
+          <div>
+            <h2 class="mb-1" style="font-family: 'DMSerifText-Regular', serif;">{{ profile.name_display }}</h2>
+            <p class="text-muted mb-0">
+              {{ profile.age }} years old | {{ profile.gender }} | {{ profile.country }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Personal Information -->
+        <div class="row g-4 mb-4">
+          <div class="col-md-6">
+            <div class="card bg-dark-transparent border-secondary">
+              <div class="card-body">
+                <h4 class="card-title gradient-text mb-3" style="font-family: 'DMSerifText-Regular', serif;">Personal Information</h4>
+                <ul class="list-unstyled label-text">
+                  <li class="mb-2"><i class="fas fa-user me-2"></i> <strong>Name:</strong> {{ profile.name_display }}</li>
+                  <li class="mb-2"><i class="fas fa-birthday-cake me-2"></i> <strong>Age:</strong> {{ profile.age }}</li>
+                  <li class="mb-2"><i class="fas fa-venus-mars me-2"></i> <strong>Gender:</strong> {{ profile.gender }}</li>
+                  <li class="mb-2"><i class="fas fa-globe me-2"></i> <strong>Country:</strong> {{ profile.country }}</li>
+                  <li class="mb-2"><i class="fas fa-map-marker-alt me-2"></i> <strong>Address:</strong> {{ profile.address }}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Current Career -->
+          <div class="col-md-6">
+            <div class="card bg-dark-transparent border-secondary">
+              <div class="card-body">
+                <h4 class="card-title gradient-text mb-3" style="font-family: 'DMSerifText-Regular', serif;">Current Career</h4>
+                {% if profile.career %}
+                  <ul class="list-unstyled label-text">
+                    <li class="mb-2"><i class="fas fa-briefcase me-2"></i> <strong>Position:</strong> {{profile.career.position}}</li>
+                    <li class="mb-2"><i class="fas fa-building me-2"></i> <strong>Company:</strong> {{profile.career.company}}</li>
+                    <li class="mb-2"><i class="fas fa-sitemap me-2"></i> <strong>Department:</strong> {{profile.career.department}}</li>
+                    <li class="mb-2"><i class="fas fa-clock me-2"></i> <strong>Experience:</strong> {{profile.career.years_experience}} years</li>
+                  </ul>
+                {% else %}
+                  <p class="text-muted mb-0">Unemployed or no career history.</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Education -->
+        <h4 class="gradient-text mb-3" style="font-family: 'DMSerifText-Regular', serif;">Education History</h4>
+        {% if profile.education_history %}
+          <div class="accordion accordion-dark mb-4">
+            {% for entry in profile.education_history %}
+              <div class="accordion-item border-0 mb-2">
+                <h2 class="accordion-header" id="headingEdu{{ loop.index }}">
+                  <button class="accordion-button collapsed bg-dark-transparent text-white" type="button" 
+                          data-bs-toggle="collapse" data-bs-target="#collapseEdu{{ loop.index }}">
+                    {{ entry.level }} ({{ entry.start_year }} - {{ entry.end_year }})
+                  </button>
+                </h2>
+                <div id="collapseEdu{{ loop.index }}" class="accordion-collapse collapse">
+                  <div class="accordion-body bg-dark-transparent text-white">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <p><i class="fas fa-graduation-cap me-2"></i> <strong>Field:</strong> {{ entry.field_of_study }}</p>
+                      </div>
+                      <div class="col-md-6">
+                        <p><i class="fas fa-clock me-2"></i> <strong>Duration:</strong> {{ entry.duration }} years</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted">No education history available</p>
+        {% endif %}
+
+        <!-- Career History -->
+        <h4 class="gradient-text mb-3" style="font-family: 'DMSerifText-Regular', serif;">Career History</h4>
+        {% if profile.career_history %}
+          <div class="accordion accordion-dark mb-4">
+            {% for job in profile.career_history %}
+              <div class="accordion-item border-0 mb-2">
+                <h2 class="accordion-header" id="headingJob{{ loop.index }}">
+                  <button class="accordion-button collapsed bg-dark-transparent text-white" type="button" 
+                          data-bs-toggle="collapse" data-bs-target="#collapseJob{{ loop.index }}">
+                    {{ job.position }} at {{ job.company }} ({{ job.start_year }} - {{ job.end_year }})
+                  </button>
+                </h2>
+                <div id="collapseJob{{ loop.index }}" class="accordion-collapse collapse">
+                  <div class="accordion-body bg-dark-transparent text-white">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <strong>Position Details:</strong>
+                        <ul class="list-unstyled mt-2">
+                          <li class="mb-2"><i class="fas fa-level-up-alt me-2"></i> Level: {{ job.level.replace('_', ' ') | title }}</li>
+                          <li class="mb-2"><i class="fas fa-sitemap me-2"></i> Department: {{ job.department }}</li>
+                          <li class="mb-2"><i class="fas fa-industry me-2"></i> Field: {{ job.field }}</li>
+                        </ul>
+                      </div>
+                      <div class="col-md-6">
+                        <strong>Company Details:</strong>
+                        <ul class="list-unstyled mt-2">
+                          <li class="mb-2"><i class="fas fa-clock me-2"></i> Duration: {{ job.duration }} years</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted">No career history available</p>
+        {% endif %}
+
+        <!-- Parents -->
+        <h4 class="gradient-text mb-3" style="font-family: 'DMSerifText-Regular', serif;">Parents</h4>
+        {% if profile.parents %}
+          <div class="card bg-dark-transparent border-secondary mb-4">
+            <div class="card-body">
+              <form method="POST" action="{{ url_for('profile_viewer', profile_uuid=profile.uuid) }}">
+                <div class="row">
+                  {% for parent in profile.parents %}
+                    <div class="col-md-6 mb-2">
+                      <div class="d-flex align-items-center">
+                        <i class="fas fa-user-circle me-2"></i>
+                        <strong class="me-2 label-text">{{ parent.relation | title }}:</strong>
+                        <button class="btn btn-outline-primary btn-sm" name="view_parent" value="1" 
+                                onclick="document.getElementById('pindex').value='{{ loop.index0 }}'">
+                          View Details
+                        </button>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+                <input type="hidden" name="parent_index" id="pindex" value="">
+              </form>
+            </div>
+          </div>
+        {% else %}
+          <p class="text-muted">No parents assigned.</p>
+        {% endif %}
+
+        <!-- Save Profile -->
+        <div class="card bg-dark-transparent border-secondary mb-4">
+          <div class="card-body">
+            <h4 class="gradient-text mb-3" style="font-family: 'DMSerifText-Regular', serif;">Save Profile</h4>
+            <form method="POST" action="{{ url_for('profile_viewer', profile_uuid=profile.uuid) }}">
+              {% if profile.uuid in saved_profiles %}
+                <p class="text-success mb-2"><i class="fas fa-check-circle me-2"></i>Profile saved!</p>
+                <button type="submit" name="remove_saved" class="btn btn-warning">
+                  <i class="fas fa-star me-2"></i>Remove from Saved
+                </button>
+              {% else %}
+                <button type="submit" name="save_profile" class="btn btn-success">
+                  <i class="fas fa-star me-2"></i>Save Profile
+                </button>
+              {% endif %}
+            </form>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="d-flex gap-2">
+          <a href="{{ url_for('profile_dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-th-large me-2"></i>Back to Dashboard
+          </a>
+          <a href="{{ url_for('home') }}" class="btn btn-secondary">
+            <i class="fas fa-home me-2"></i>Back to Home
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .bg-dark-transparent {
+      background-color: rgba(0, 0, 0, 0.85);
+    }
+
+    .profile-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background-size: cover;
+      background-position: center;
+      border: 3px solid #457b9d;
+    }
+
+    .label-text {
+        color: #ffffff;
+    }
+
+    .profile-avatar[data-avatar] {
+      background-image: url("attr(data-avatar)");
+    }
+
+    .gradient-text {
+      background: linear-gradient(45deg, #457b9d, #a8dadc);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    .accordion-dark .accordion-button.collapsed {
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      border: 1px solid #2c3e50;
+    }
+
+    .accordion-dark .accordion-button:not(.collapsed) {
+      background: linear-gradient(45deg, #1d3557, #457b9d);
+      color: white;
+    }
+
+    .accordion-dark .accordion-collapse {
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .accordion-dark .accordion-button::after {
+      filter: invert(1);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(45deg, #2c3e50, #34495e);
+      border: none;
+    }
+
+    .btn-success {
+      background: linear-gradient(45deg, #2ecc71, #27ae60);
+      border: none;
+    }
+
+    .btn-warning {
+      background: linear-gradient(45deg, #f1c40f, #f39c12);
+      border: none;
+    }
+
+    .btn-outline-primary {
+      border-color: #457b9d;
+      color: #457b9d;
+    }
+
+    .btn-outline-primary:hover {
+      background: linear-gradient(45deg, #1d3557, #457b9d);
+      border-color: transparent;
+    }
+
+    .card {
+      transition: transform 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+    }
+  </style>
+{% else %}
+  <div class="container py-4">
+    <div class="alert alert-danger">
+      <i class="fas fa-exclamation-circle me-2"></i>
+      No profile selected or profile not found.
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

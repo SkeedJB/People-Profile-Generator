@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container py-4">
+  <div class="card bg-dark-transparent text-white shadow-lg border-0 rounded-4 mb-4">
+    <div class="card-body">
+      <h2 class="mb-4">Profile Dashboard</h2>
+
+      <!-- Filter form -->
+      <form method="POST" action="{{ url_for('profile_dashboard') }}" class="mb-4">
+        <div class="card bg-darker border-secondary mb-4">
+          <div class="card-body">
+            <h5 class="mb-3 text-white" style="font-family: 'DMSerifText-Regular', serif;">Filter Profiles</h5>
+            <div class="row g-3">
+              <!-- Country -->
+              <div class="col-md-3">
+                <label for="selected_country" class="form-label filter-label">
+                  <i class="fas fa-globe me-2"></i>Country
+                </label>
+                <select name="selected_country" class="form-select bg-dark text-white border-secondary">
+                  <option value="All" {% if selected_country == 'All' %}selected{% endif %}>All Countries</option>
+                  {% for country in COUNTRIES %}
+                    <option value="{{ country }}" {% if selected_country == country %}selected{% endif %}>{{ country }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <!-- Gender -->
+              <div class="col-md-3">
+                <label for="selected_gender" class="form-label filter-label">
+                  <i class="fas fa-venus-mars me-2"></i>Gender
+                </label>
+                <select name="selected_gender" class="form-select bg-dark text-white border-secondary">
+                  <option value="All" {% if selected_gender == 'All' %}selected{% endif %}>All Genders</option>
+                  <option value="Male" {% if selected_gender == 'Male' %}selected{% endif %}>Male</option>
+                  <option value="Female" {% if selected_gender == 'Female' %}selected{% endif %}>Female</option>
+                </select>
+              </div>
+              <!-- Age Range-->
+              <div class="col-md-3">
+                <label class="form-label filter-label">
+                  <i class="fas fa-birthday-cake me-2"></i>Age Range
+                </label>
+                <div class="input-group">
+                  <input type="number" name="age_min" value="{{ age_min }}" min="0" max="100" 
+                         placeholder="Min" class="form-control bg-dark text-white border-secondary">
+                  <span class="input-group-text bg-dark text-white border-secondary">-</span>
+                  <input type="number" name="age_max" value="{{ age_max }}" min="0" max="100" 
+                         placeholder="Max" class="form-control bg-dark text-white border-secondary">
+                </div>
+              </div>
+              <!-- Education Level -->
+              <div class="col-md-3">
+                <label for="education_level" class="form-label filter-label">
+                  <i class="fas fa-graduation-cap me-2"></i>Education
+                </label>
+                <select name="education_level" class="form-select bg-dark text-white border-secondary">
+                  <option value="All" {% if selected_education_level == 'All' %}selected{% endif %}>All Levels</option>
+                  <option value="Not in school yet" {% if selected_education_level == 'Not in school yet' %}selected{% endif %}>Not in school yet</option>
+                  <option value="Elementary School" {% if selected_education_level == 'Elementary School' %}selected{% endif %}>Elementary School</option>
+                  <option value="Middle School" {% if selected_education_level == 'Middle School' %}selected{% endif %}>Middle School</option>
+                  <option value="High School" {% if selected_education_level == 'High School' %}selected{% endif %}>High School</option>
+                  <option value="Associates" {% if selected_education_level == 'Associates' %}selected{% endif %}>Associates</option>
+                  <option value="Bachelors" {% if selected_education_level == 'Bachelors' %}selected{% endif %}>Bachelors</option>
+                  <option value="Masters" {% if selected_education_level == 'Masters' %}selected{% endif %}>Masters</option>
+                  <option value="Doctorate" {% if selected_education_level == 'Doctorate' %}selected{% endif %}>Doctorate</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row g-3 mt-3">
+              <div class="col-md-3">
+                <label for="num_profiles" class="form-label filter-label">
+                  <i class="fas fa-users me-2"></i>Number of Profiles
+                </label>
+                <input type="number" name="num_profiles" value="{{ num_profiles }}" min="1" max="10" 
+                       class="form-control bg-dark text-white border-secondary">
+              </div>
+              <div class="col-md-3">
+                <label for="columns_per_row" class="form-label filter-label">
+                  <i class="fas fa-columns me-2"></i>Columns per Row
+                </label>
+                <input type="number" name="columns_per_row" value="{{ columns_per_row }}" min="1" max="5" 
+                       class="form-control bg-dark text-white border-secondary">
+              </div>
+              <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" name="action" value="save_filters" class="btn btn-secondary btn-lg w-100">
+                  <i class="fas fa-save me-2"></i>Save Filters
+                </button>
+              </div>
+              <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" name="action" value="generate" class="btn btn-primary btn-lg w-100 gradient-blue">
+                  <i class="fas fa-sync-alt me-2"></i>Generate Profiles
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      {% if profile_list %}
+        <h3 class="text-center mb-4" style="font-family: 'DMSerifText-Regular', serif;">Generated Profiles</h3>
+        <div class="row row-cols-{{ columns_per_row }} g-4">
+          {% for profile in profile_list %}
+            <div class="col">
+              <div class="card h-100 bg-darker text-white border-0 rounded-4 shadow-lg hover-card">
+                <div class="card-body">
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="profile-avatar me-3" 
+                         data-avatar="{{ profile.avatar_url | default('/static/default-avatar.jpg') }}">
+                    </div>
+                    <div>
+                      <h5 class="card-title mb-1" style="font-family: 'DMSerifText-Regular', serif;">{{ profile.name_display }}</h5>
+                      <p class="card-text small mb-0 text-muted">
+                        <i class="fas fa-birthday-cake me-1"></i> {{ profile.age }} 
+                        <i class="fas fa-venus-mars mx-1"></i> {{ profile.gender }}
+                      </p>
+                      <p class="card-text small mb-0 text-muted">
+                        <i class="fas fa-briefcase me-1"></i> {{ profile.job_title }}
+                      </p>
+                      <p class="card-text small mb-0 text-muted">
+                        <i class="fas fa-building me-1"></i> {{ profile.company }}
+                      </p>
+                      <p class="card-text small mb-0 text-muted">
+                        <i class="fas fa-map-marker-alt me-1"></i> {{ profile.country }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="text-center">
+                    <a href="{{ url_for('profile_viewer', profile_uuid=profile.uuid) }}" 
+                       class="btn btn-primary w-100 gradient-blue">
+                      <i class="fas fa-user me-2"></i>View Profile
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center text-muted mt-5">
+          <i class="fas fa-users fa-3x mb-3"></i>
+          <p>No profiles generated yet. Use the form above to generate profiles.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+.bg-dark-transparent {
+  background-color: rgba(0, 0, 0, 0.85);
+}
+
+.bg-darker {
+  background-color: rgba(116, 116, 116, 0.6);
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 3px solid #457b9d;
+}
+
+.profile-avatar[data-avatar] {
+  background-image: url("attr(data-avatar)");
+}
+
+.gradient-blue {
+  background: linear-gradient(45deg, #1d3557, #457b9d);
+  border: none;
+  transition: transform 0.2s;
+}
+
+.gradient-blue:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(45deg, #457b9d, #1d3557);
+}
+
+.hover-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.hover-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Dark theme form controls */
+.form-select, .form-control {
+  transition: border-color 0.2s;
+}
+
+.form-select:focus, .form-control:focus {
+  background-color: rgba(0, 0, 0, 0.8);
+  border-color: #457b9d;
+  box-shadow: 0 0 0 0.25rem rgba(69, 123, 157, 0.25);
+}
+
+.form-select option {
+  background-color: #1a1a1a;
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #457b9d;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1d3557;
+}
+
+.filter-label {
+    color: #ffffff;
+}
+</style>
+
+{% endblock %}

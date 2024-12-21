@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Saved Profiles</h2>
+{% if not saved_profiles %}
+  <div class="alert alert-info">No saved profiles yet. View a profile and click "Save Profile" to add it here.</div>
+{% else %}
+  <div class="row row-cols-1 row-cols-md-2 g-4">
+    {% for profile_uuid, profile in saved_profiles.items() %}
+      <div class="col">
+        <div class="card" style="background-color: rgba(169,169,169,0.8);">
+          <div class="card-body">
+            <div style="display: flex; align-items: center;">
+              <div style="width: 60px; height: 60px; border-radius: 50%; background-color: lightsteelblue; margin-right: 15px;"></div>
+              <div>
+                <h5>{{ profile.name_display }}</h5>
+                <p>Age: {{ profile.age }} | {{ profile.gender }}</p>
+                <p>{{ profile.job_title }} at {{ profile.company }}</p>
+                <p>{{ profile.country }}</p>
+              </div>
+            </div>
+            <form method="GET" action="{{ url_for('profile_viewer', profile_uuid=profile_uuid) }}" class="d-inline-block">
+              <button class="btn btn-primary" type="submit">View Profile</button>
+            </form>
+            <form method="POST" action="{{ url_for('profile_viewer', profile_uuid=profile_uuid) }}" class="d-inline-block">
+              <button class="btn btn-danger" type="submit" name="remove_saved">Remove from Saved</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+<a href="{{ url_for('profile_dashboard') }}" class="btn btn-secondary mt-4">Back to Dashboard</a>
+{% endblock %}
