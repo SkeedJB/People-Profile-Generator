@@ -1,4 +1,3 @@
-from faker import Faker
 from data.person_data import profile_data
 from generation.gen_education import EducationProfile
 from generation.gen_career import CareerGenerator
@@ -7,7 +6,7 @@ import pandas as pd
 import random
 from datetime import datetime
 from deep_translator import GoogleTranslator
-import langdetect
+from generation.global_faker import get_faker
 
 class PersonProfile:
     def __init__(self, filters=None):
@@ -23,6 +22,9 @@ class PersonProfile:
         """
         self.filters = filters or {}
 
+    def is_ascii(self, s):
+        return all(ord(c) < 128 for c in s)
+
     def get_country(self):
         if 'country' in self.filters:
             self.country = self.filters['country']
@@ -32,12 +34,12 @@ class PersonProfile:
         return self.country, self.country_code
     
     def get_address(self):
-        fake = Faker(locale=self.country_code)
+        fake = get_faker(self.country_code)
         self.address = fake.unique.address()
         self.address = self.address.replace('\n', '\n')
 
         # Format the address to be more readable
-        if langdetect.detect(self.address) != 'en':
+        if not self.is_ascii(self.address):
             translator = GoogleTranslator(source='auto', target='en')
             self.address = translator.translate(self.address)
         return self.address
@@ -50,7 +52,7 @@ class PersonProfile:
         return self.gender
 
     def get_name(self, gender):
-        fake = Faker(locale=self.country_code)
+        fake = get_faker(self.country_code)
         if gender == "male":
             self.first_name = fake.unique.first_name_male()
         else:
@@ -61,7 +63,7 @@ class PersonProfile:
         self.full_name_romanized = self.full_name
 
         # Check if the name contains any non-ASCII characters, if so, translate it to English
-        if langdetect.detect(self.full_name) != 'en':
+        if not self.is_ascii(self.full_name):
             translator = GoogleTranslator(source='auto', target='en')
             self.full_name_romanized = translator.translate(self.full_name)
 
@@ -70,11 +72,11 @@ class PersonProfile:
     def get_age(self):
         if 'age_range' in self.filters:
             min_age, max_age = self.filters['age_range']
-            birth_year = datetime.now().year - random.randint(min_age, max_age)
+            self.birth_year = datetime.now().year - random.randint(min_age, max_age)
         else:
-            birth_year = random.randint(profile_data["birth_range"][0], profile_data["birth_range"][1])
-        self.age = datetime.now().year - birth_year
-        return self.age
+            self.birth_year = random.randint(profile_data["birth_range"][0], profile_data["birth_range"][1])
+        self.age = datetime.now().year - self.birth_year
+        return self.age, self.birth_year
 
     # Uses all the functions to generate a person profile
     def generate_person_profile(self):

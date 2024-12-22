@@ -49,8 +49,12 @@
                     <strong>Age:</strong> {{ profile.age }}
                   </li>
                   <li class="mb-2">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    <strong>Birth Date:</strong> {{ profile.birth_date }}
+                  </li>
+                  <li class="mb-2">
                     <i class="fas fa-venus-mars me-2"></i>
-                    <strong>Gender:</strong> {{ profile.gender }}
+                    <strong>Gender:</strong> {{ profile.gender | title }}
                   </li>
                   <li class="mb-2">
                     <i class="fas fa-globe me-2"></i>
@@ -87,8 +91,8 @@
                       <strong>Department:</strong> {{profile.career.department}}
                     </li>
                     <li class="mb-2">
-                      <i class="fas fa-clock me-2"></i>
-                      <strong>Experience:</strong> {{profile.career.years_experience}} years
+                      <i class="fas fa-dollar-sign me-2"></i>
+                      <strong>Salary:</strong> {{profile.career.salary}}
                     </li>
                   </ul>
                 {% else %}
@@ -104,7 +108,7 @@
         {% if profile.education_history %}
           <div class="accordion mb-4" id="educationAccordion">
             {% for entry in profile.education_history %}
-              <div class="accordion-item">
+              <div class="accordion-item" style="background-color: #f7f7f7;">
                 <h2 class="accordion-header" id="headingEdu{{ loop.index }}">
                   <button class="accordion-button collapsed" type="button"
                           data-bs-toggle="collapse" data-bs-target="#collapseEdu{{ loop.index }}">
@@ -142,7 +146,7 @@
         {% if profile.career_history %}
           <div class="accordion mb-4" id="careerAccordion">
             {% for job in profile.career_history %}
-              <div class="accordion-item">
+              <div class="accordion-item" style="background-color: #f7f7f7;">
                 <h2 class="accordion-header" id="headingJob{{ loop.index }}">
                   <button class="accordion-button collapsed" type="button"
                           data-bs-toggle="collapse" data-bs-target="#collapseJob{{ loop.index }}">
@@ -167,6 +171,10 @@
                           <li class="mb-2">
                             <i class="fas fa-industry me-2"></i>
                             Field: {{ job.field }}
+                          </li>
+                          <li class="mb-2">
+                            <i class="fas fa-dollar-sign me-2"></i>
+                            Salary: {{ job.salary }}
                           </li>
                         </ul>
                       </div>

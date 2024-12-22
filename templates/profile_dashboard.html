@@ -22,7 +22,7 @@
                 </label>
                 <select name="selected_country" class="form-select">
                   <option value="All" {% if selected_country == 'All' %}selected{% endif %}>All Countries</option>
-                  {% for country in COUNTRIES %}
+                  {% for country in country_data.keys() %}
                     <option value="{{ country }}" {% if selected_country == country %}selected{% endif %}>{{ country }}</option>
                   {% endfor %}
                 </select>
@@ -70,12 +70,14 @@
               </div>
             </div>
 
+            <!-- Number of Profiles and Columns per Row -->
             <div class="row g-3 mt-3">
               <div class="col-md-3">
-                <label for="num_profiles" class="form-label" style="color: #232324;">
+                <label for="num_of_profiles" class="form-label" style="color: #232324;">
                   <i class="fas fa-users me-1"></i>Number of Profiles
                 </label>
-                <input type="number" name="num_profiles" value="{{ num_profiles }}" min="1" max="10" 
+                <input type="number" name="num_of_profiles" placeholder="Default: 6 | Max: 10" 
+                       value="{{ num_of_profiles }}" min="1" max="10" 
                        class="form-control">
               </div>
               <div class="col-md-3">
@@ -112,10 +114,8 @@
                   <!-- Trash Icon to remove profile -->
                   <form method="POST" action="{{ url_for('profile_dashboard') }}" class="position-absolute top-0 end-0 m-2" 
                         onsubmit="return confirm('Are you sure you want to remove this profile?');">
-                    <button type="submit" name="remove_profile" value="{{ profile.uuid }}" class="btn btn-link p-0">
-                      <div style="background-color: #e06275; padding: 4px; border-radius: 4px;">
-                        <img src="{{ url_for('static', filename='icons/trashcan-icon.png') }}" alt="Remove" width="25" height="25">
-                      </div>
+                    <button type="submit" name="remove_profile" value="{{ profile.uuid }}" class="btn btn-danger btn-sm">
+                      <i class="fas fa-trash-alt"></i>
                     </button>
                   </form>
 

@@ -1,7 +1,6 @@
 from data.person_data import profile_data
 from data.education_data import education_data
 import random
-from faker import Faker
 from typing import Dict, List
 from datetime import datetime
 
@@ -30,8 +29,8 @@ class EducationProfile:
         higher_ed_probability = {
             "Associates": 0.40,  # 40% chance of pursuing associates
             "Bachelors": 0.35,  # 35% chance of pursuing bachelors
-            "Masters": 0.15,    # 15% chance of pursuing masters
-            "Doctorate": 0.05   # 5% chance of pursuing doctorate
+            "Masters": 0.20,    # 20% chance of pursuing masters
+            "Doctorate": 0.10   # 10% chance of pursuing doctorate
         }
 
         # If person is of college age or older
@@ -114,7 +113,7 @@ class EducationProfile:
 
         # Higher Education with same structure as before but with new fields
         if highest_level in ["Associates", "Bachelors", "Masters", "Doctorate"]:
-            current_age = 19
+            current_age = self.age
             degree_durations = {
                 "Associates": 2,
                 "Bachelors": 4,

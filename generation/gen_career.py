@@ -1,9 +1,11 @@
-from faker import Faker
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 import random
 from datetime import datetime
-from countryinfo import CountryInfo
-import pycountry
+
+# Import your new provider
+from generation.providers.company_name_provider import CompanyNameProvider
+
+from generation.global_faker import get_faker
 
 class CareerGenerator:
     # Role prefixes stay consistent across levels of seniority
@@ -16,6 +18,11 @@ class CareerGenerator:
 
     # Expanded ROLE_DOMAINS to match education majors
     ROLE_DOMAINS = {
+        'Retail': [
+            ('Sales', 'Manager', 'Assistant'),
+            ('Retail', 'Store', 'Sales'),
+            ('Customer', 'Service', 'Management')
+        ],
         'Engineering': [
             ('Engineer', 'Developer', 'Technician'),
             ('Mechanical', 'Electrical', 'Software', 'Systems'),
@@ -83,11 +90,32 @@ class CareerGenerator:
         ]
     }
 
+    def salary_for_level(self, level: str) -> int:
+        """Generate a salary for a given career level"""
+        if level == "entry_level":
+            salary_range = (15000, 50000)
+        elif level == "mid_level":
+            salary_range = (50000, 100000)
+        elif level == "senior_level":
+            salary_range = (100000, 200000)
+        elif level == "executive_level":
+            salary_range = (200000, 500000)
+        return salary_range
+    
+    def get_salary(self, salary_range: Tuple[int, int]) -> str:
+        """Generate a salary for a given career level"""
+        generated_salary = random.randint(salary_range[0], salary_range[1])
+        formatted_salary = f"${round(generated_salary / 1000, 1)}k USD"
+        return formatted_salary
+
     def __init__(self, seed=None):
-        self.faker = Faker()
+        self.faker = get_faker()
+        # Register our custom company name provider
+        self.faker.add_provider(CompanyNameProvider)
+
         if seed:
-            Faker.seed(seed)
-            random.seed(seed)
+            self.faker.seed(seed)
+            self.faker.random.seed(seed)
         self.current_year = datetime.now().year
 
     def _can_switch_careers(self, education_level: str) -> bool:
@@ -132,6 +160,7 @@ class CareerGenerator:
 
     def _generate_department(self, field: str) -> str:
         departments = {
+            "Retail": ["Sales", "Customer Service", "Inventory Management", "Merchandising", "Marketing", "Store Management"],
             "Engineering": ["Research and Development", "Quality Control", "Production", "Maintenance", "Safety", "Environmental"],
             "Computer Science": ["Software Development", "Data Science", "Cybersecurity", "AI and Machine Learning", "Web Development", "Mobile Development"],
             "Medicine": ["Clinical", "Research", "Pharmaceutical", "Healthcare", "Public Health"],
@@ -162,6 +191,16 @@ class CareerGenerator:
         
         components = [random.choice(part) for part in domain_parts]
         return f"{prefix} {components[1]} {components[0]}" if prefix else f"{components[1]} {components[0]}"
+
+    def _generate_company_name(self, domain: str) -> str:
+        """
+        Generate a sector-specific company name by mapping the domain to a sector
+        and calling the Faker provider's company_name method.
+        """
+        # Use the domain-sector mapping from the provider
+        from generation.providers.company_name_provider import CompanyNameProvider
+        sector = CompanyNameProvider.DOMAIN_SECTOR_MAP.get(domain, "General")
+        return self.faker.company_name(sector=sector)
 
     def generate_career_history(self, education_history: List[Dict], age: int) -> Dict:
         """Generate career history based on education timeline with added realism"""
@@ -215,6 +254,7 @@ class CareerGenerator:
                     "start_year": career_start_year + (years_working - remaining_years),
                     "end_year": career_start_year + (years_working - remaining_years) + gap_length,
                     "duration": gap_length,
+                    "salary": None,
                     "department": None
                 })
                 remaining_years -= gap_length
@@ -240,11 +280,12 @@ class CareerGenerator:
 
             job = {
                 "position": self._generate_position_title(level, current_domain),
-                "company": self.faker.company(),
+                "company": self._generate_company_name(current_domain),
                 "field": current_domain,
                 "level": level,
                 "start_year": career_start_year + (years_working - remaining_years),
                 "end_year": career_start_year + (years_working - remaining_years) + job_length,
+                "salary": self.get_salary(self.salary_for_level(level)),
                 "duration": job_length,
             }
 
@@ -267,6 +308,7 @@ class CareerGenerator:
                     "start_year": history[i]['end_year'],
                     "end_year": history[i]['end_year'] + break_length,
                     "duration": break_length,
+                    "salary": None,
                     "department": None
                 })
 
