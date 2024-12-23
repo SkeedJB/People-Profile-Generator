@@ -203,8 +203,19 @@ class CareerGenerator:
         return self.faker.company_name(sector=sector)
 
     def generate_career_history(self, education_history: List[Dict], age: int) -> Dict:
-        """Generate career history based on education timeline with added realism"""
-        if not education_history or age < 18:
+        """
+        Generate career history based primarily on age, allowing for concurrent education and work.
+        Minimum working age is 16.
+        """
+        if age < 16:  # Too young to work
+            return {
+                'career_history': [],
+                'career': None
+            }
+
+        # Calculate total possible working years (from age 16)
+        years_working = age - 16
+        if years_working <= 0:
             return {
                 'career_history': [],
                 'career': None
@@ -212,113 +223,106 @@ class CareerGenerator:
 
         history = []
 
-        # Find the latest education completion
-        latest_education = max(
-            (edu for edu in education_history if not edu["is_current"]), 
-            key=lambda x: x["end_year"],
-            default=None
-        )
-        if not latest_education:
-            return {
-                'career_history': [],
-                'career': None
-            }
+        # Get the highest completed or in-progress education
+        latest_education = max(education_history, 
+                             key=lambda e: e["start_year"] if isinstance(e["start_year"], int) else 0, 
+                             default=None)
 
-        career_start_year = latest_education["end_year"]
-        years_working = self.current_year - career_start_year
+        # Determine starting domain based on education or random choice
+        current_domain = None
+        if latest_education:
+            current_domain = latest_education.get("field_of_study")
+        if not current_domain or current_domain == "General":
+            current_domain = random.choice(list(self.ROLE_DOMAINS.keys()))
 
-        if years_working <= 0:
-            return {
-                'career_history': [],
-                'career': None
-            }
+        # Calculate career start at age 16 or education start, whichever is later
+        career_start_year = self.current_year - years_working
 
-        # Determine number of job changes with flexibility
-        max_jobs = max(1, min(7, years_working // 1.5))  # Increased max jobs and reduced minimum years per job
+        # number of jobs can be up to ~1 job per 1.5 years, 1..7
+        max_jobs = max(1, min(7, int(years_working // 1.5)))
         num_jobs = random.randint(1, max_jobs)
 
         remaining_years = years_working
-        current_domain = latest_education.get("major", random.choice(list(self.ROLE_DOMAINS.keys())))
 
         for i in range(num_jobs):
-            # Introduce probability for unemployment gap
-            if i > 0 and random.random() < 0.2:  # 20% chance of a gap
-                gap_length = random.randint(1, 2)  # 1-2 years gap
+            # 20% chance of an unemployment gap if not first job
+            if i > 0 and random.random() < 0.2:
+                gap_length = random.randint(1, 2)
                 if remaining_years - gap_length <= 0:
                     break
+                start_gap = career_start_year + (years_working - remaining_years)
+                end_gap = start_gap + gap_length
                 history.append({
                     "position": "Unemployed",
                     "company": None,
                     "field": None,
                     "level": "unemployed",
-                    "start_year": career_start_year + (years_working - remaining_years),
-                    "end_year": career_start_year + (years_working - remaining_years) + gap_length,
+                    "start_year": start_gap,
+                    "end_year": end_gap,
                     "duration": gap_length,
                     "salary": None,
                     "department": None
                 })
                 remaining_years -= gap_length
 
-            # Determine job duration with more variability
+            # Determine length for the next job (1..5 years), ensuring enough time remains
             if i == num_jobs - 1:
                 job_length = remaining_years
             else:
-                job_length = random.randint(1, 5)  # Job length between 1 to 5 years
-                job_length = min(job_length, remaining_years - (num_jobs - i - 1) * 1)  # Ensure at least 1 year for remaining jobs
-                if job_length < 1:
-                    break
+                job_length = random.randint(1, 5)
+                # Ensure at least 1 year remains for subsequent positions
+                job_length = min(job_length, remaining_years - (num_jobs - i - 1))
 
-            # Calculate years of experience
+            if job_length < 1:
+                break
+
+            # Calculate experience so far (excludes the upcoming job)
             years_experience = years_working - remaining_years
 
-            # Possibility of career switch with adjusted probability
-            if self._can_switch_careers(latest_education["level"]) and random.random() < 0.3:
+            # 30% chance of switching domains if allowed
+            education_level = latest_education["level"] if latest_education else "High School"
+            if self._can_switch_careers(education_level) and random.random() < 0.3:
                 current_domain = random.choice(list(self.ROLE_DOMAINS.keys()))
 
-            # Generate job entry
-            level = self._get_career_level(years_experience, latest_education["level"])
+            level = self._get_career_level(years_experience, education_level)
+
+            start_job = career_start_year + (years_working - remaining_years)
+            end_job = start_job + job_length
+
+            # For current job, if it would end after current year, set to Present
+            if end_job > self.current_year:
+                end_job = "Present"
+                job_length = self.current_year - start_job
 
             job = {
                 "position": self._generate_position_title(level, current_domain),
                 "company": self._generate_company_name(current_domain),
                 "field": current_domain,
                 "level": level,
-                "start_year": career_start_year + (years_working - remaining_years),
-                "end_year": career_start_year + (years_working - remaining_years) + job_length,
+                "start_year": start_job,
+                "end_year": end_job,
                 "salary": self.get_salary(self.salary_for_level(level)),
                 "duration": job_length,
+                "department": self._generate_department(current_domain),
+                "years_experience": years_experience
             }
 
             history.append(job)
             remaining_years -= job_length
 
-        # Optionally, add career breaks randomly
-        for i in range(len(history)):
-            if history[i]['level'] == 'unemployed':
-                continue
-            if random.random() < 0.1:  # 10% chance for a career break
-                break_length = random.randint(1, 3)
-                if history[i]['end_year'] + break_length > self.current_year:
-                    break_length = self.current_year - history[i]['end_year']
-                history.insert(i + 1, {
-                    "position": "Career Break",
-                    "company": None,
-                    "field": None,
-                    "level": "career_break",
-                    "start_year": history[i]['end_year'],
-                    "end_year": history[i]['end_year'] + break_length,
-                    "duration": break_length,
-                    "salary": None,
-                    "department": None
-                })
+        # Use the most recent "employed" job as "career"
+        latest_job = next(
+            (j for j in reversed(history) if j['level'] not in ['unemployed', 'career_break']), 
+            None
+        )
 
-        # Assign departments where applicable
-        for job in history:
-            job['department'] = self._generate_department(job['field']) if job['field'] else None
+        # If we found a latest job, ensure it has years_experience
+        if latest_job:
+            latest_job['years_experience'] = years_working
 
         return {
             'career_history': history,
-            'career': next((job for job in reversed(history) if job['level'] != 'unemployed' and job['level'] != 'career_break'), None)
+            'career': latest_job
         }
 
     def get_current_career(self, career_history: List[Dict]) -> Optional[Dict]:

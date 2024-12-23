@@ -1,18 +1,21 @@
+import random
+import asyncio
+from datetime import datetime
+from deep_translator import GoogleTranslator
+from data.country_data import COUNTRIES, COUNTRY_LOCALES
 from data.person_data import profile_data
 from generation.gen_education import EducationProfile
 from generation.gen_career import CareerGenerator
-from data.country_data import COUNTRIES, COUNTRY_LOCALES
-import pandas as pd
-import random
-from datetime import datetime
-from deep_translator import GoogleTranslator
 from generation.global_faker import get_faker
 
 class PersonProfile:
+    """
+    Represents a single person. Provides async methods to fetch name
+    and address (with translation if necessary).
+    """
     def __init__(self, filters=None):
         """
-        Initialize PersonProfile with optional filters
-        filters: dict of attributes to filter by, e.g., 
+        Initialize PersonProfile with optional filters, e.g.:
         {
             'country': 'USA',
             'gender': 'female',
@@ -20,113 +23,210 @@ class PersonProfile:
             'education_level': 'Bachelor'
         }
         """
-        self.filters = filters or {}
+        self.filters = filters if filters else {}
+        self.country = None
+        self.country_code = None
+        self.gender = None
+        self.age = None
+        self.birth_year = None
 
-    def is_ascii(self, s):
+        self.first_name = None
+        self.last_name = None
+        self.full_name = None
+        self.full_name_romanized = None
+        self.address = None
+
+        self.education_profile = {}
+        self.career_profile = {}
+
+    async def async_translate(self, text):
+        """
+        Helper for doing I/O-bound translation asynchronously.
+        Includes error handling and retries.
+        """
+        try:
+            translator = GoogleTranslator(source='auto', target='en')
+            # Add retry logic and better error handling
+            for _ in range(3):  # Try up to 3 times
+                try:
+                    return await asyncio.to_thread(translator.translate, text)
+                except Exception as e:
+                    await asyncio.sleep(1)  # Wait before retry
+            # If all retries fail, return original text
+            return text
+        except Exception as e:
+            print(f"Translation error: {e}")
+            return text  # Fallback to original text if translation fails
+
+    def is_ascii(self, s: str) -> bool:
         return all(ord(c) < 128 for c in s)
 
-    def get_country(self):
-        if 'country' in self.filters:
+    def set_country(self):
+        """
+        Sets self.country to either a user-chosen country (if 'country' in filters)
+        or picks randomly from list of COUNTRIES. Also sets self.country_code.
+        """
+        if 'country' in self.filters and self.filters['country'] != 'All':
             self.country = self.filters['country']
         else:
             self.country = random.choice(COUNTRIES)
         self.country_code = COUNTRY_LOCALES[self.country]
-        return self.country, self.country_code
-    
-    def get_address(self):
-        fake = get_faker(self.country_code)
-        self.address = fake.unique.address()
-        self.address = self.address.replace('\n', '\n')
 
-        # Format the address to be more readable
-        if not self.is_ascii(self.address):
-            translator = GoogleTranslator(source='auto', target='en')
-            self.address = translator.translate(self.address)
-        return self.address
-    
-    def get_gender(self):
-        if 'gender' in self.filters:
+    async def get_address(self):
+        """
+        Gets a random address (via faker) and translates it to ASCII if necessary.
+        """
+        try:
+            fake = get_faker(self.country_code)
+            addr = fake.unique.address().replace('\n', ' ')
+            if not self.is_ascii(addr):
+                translated = await self.async_translate(addr)
+                self.address = translated if translated else addr
+            else:
+                self.address = addr
+        except Exception as e:
+            print(f"Address generation error: {e}")
+            self.address = "Address generation failed"
+
+    async def get_name(self):
+        """
+        Generates first_name, last_name (via faker) and sets both self.full_name
+        and self.full_name_romanized (translated if needed).
+        """
+        try:
+            fake = get_faker(self.country_code)
+            if self.gender == "male":
+                self.first_name = fake.unique.first_name_male()
+            else:
+                self.first_name = fake.unique.first_name_female()
+            self.last_name = fake.unique.last_name()
+
+            full_name_local = f"{self.first_name} {self.last_name}"
+            self.full_name = full_name_local
+            self.full_name_romanized = full_name_local
+
+            # Translate if it contains non-latin characters
+            if not self.is_ascii(full_name_local):
+                translated = await self.async_translate(full_name_local)
+                self.full_name_romanized = translated if translated else full_name_local
+        except Exception as e:
+            print(f"Name generation error: {e}")
+            self.first_name = "John"
+            self.last_name = "Doe"
+            self.full_name = "John Doe"
+            self.full_name_romanized = "John Doe"
+
+    def set_gender(self):
+        """
+        Sets self.gender to either a user-chosen gender or picks randomly.
+        """
+        if 'gender' in self.filters and self.filters['gender'] != 'All':
             self.gender = self.filters['gender']
         else:
             self.gender = random.choice(profile_data["sex"])
-        return self.gender
 
-    def get_name(self, gender):
-        fake = get_faker(self.country_code)
-        if gender == "male":
-            self.first_name = fake.unique.first_name_male()
-        else:
-            self.first_name = fake.unique.first_name_female()
-        self.last_name = fake.unique.last_name()
-
-        self.full_name = f"{self.first_name} {self.last_name}"
-        self.full_name_romanized = self.full_name
-
-        # Check if the name contains any non-ASCII characters, if so, translate it to English
-        if not self.is_ascii(self.full_name):
-            translator = GoogleTranslator(source='auto', target='en')
-            self.full_name_romanized = translator.translate(self.full_name)
-
-        return self.first_name, self.last_name, self.full_name_romanized
-
-    def get_age(self):
-        if 'age_range' in self.filters:
+    def set_birth_year_and_age(self):
+        """
+        Randomly sets birth year (based on either an 'age_range' in filters
+        or defaulting to profile_data) and calculates age.
+        """
+        year_now = datetime.now().year
+        if 'age_range' in self.filters and isinstance(self.filters['age_range'], tuple):
             min_age, max_age = self.filters['age_range']
-            self.birth_year = datetime.now().year - random.randint(min_age, max_age)
+            self.birth_year = year_now - random.randint(min_age, max_age)
         else:
+            # fallback to default
             self.birth_year = random.randint(profile_data["birth_range"][0], profile_data["birth_range"][1])
-        self.age = datetime.now().year - self.birth_year
-        return self.age, self.birth_year
+        self.age = year_now - self.birth_year
 
-    # Uses all the functions to generate a person profile
-    def generate_person_profile(self):
-        self.get_country()
-        self.get_address()
-        self.get_gender()
-        self.get_name(self.gender)
-        self.get_age()
+    def build_education_profile(self):
+        """
+        Builds an EducationProfile, sets it in self.education_profile.
+        """
+        education_filters = {}
+        if self.filters.get('education_level') and self.filters['education_level'] != 'All':
+            education_filters['education_level'] = self.filters['education_level']
+        if self.filters.get('major_field'):
+            education_filters['major_field'] = self.filters['major_field']
 
-        # Initialize EducationProfile with relevant filters
-        education_filters = {
-            'education_level': self.filters.get('education_level'),
-            'major_field': self.filters.get('major_field')
-        }
-        education = EducationProfile(age=self.age, filters=education_filters)
+        edu = EducationProfile(age=self.age, filters=education_filters)
+        level = edu.get_education_level()
+        history = edu.generate_education_history()
+        major = edu.get_major()
 
-        # Get education level
-        education_level = education.get_education_level()
-
-        # Get education history
-        education_history = education.generate_education_history()
-
-        # Combine into a dictionary
         self.education_profile = {
-            "education_level": education_level,
-            "education_history": education_history,
-            "major_field": education.get_major()
+            "education_level": level,
+            "education_history": history,
+            "major_field": major
         }
 
-        # Generate Career Profile
+    def build_career_profile(self):
+        """
+        Builds a CareerGenerator, sets it in self.career_profile.
+        """
         career_generator = CareerGenerator()
         career_info = career_generator.generate_career_history(
             age=self.age,
             education_history=self.education_profile["education_history"]
         )
+        
+        # If no career was found, default data:
         if career_info['career'] is None:
             career_info['career'] = {
                 "position": "Unemployed",
                 "company": "N/A",
                 "department": "N/A",
-                "location": "N/A",
+                "salary": "N/A",
                 "years_experience": 0
-        }
-        career_info['career']['years_experience'] = 0
+            }
 
         self.career_profile = {
             "career_history": career_info['career_history'],
             "career": career_info['career'],
-            "job_title": career_info['career']['position'],
-            "company": career_info['career']['company'],
-            "department": career_info['career']['department'],
-            "years_experience": career_info['career']['years_experience']
+            "job_title": career_info['career'].get('position', 'N/A'),
+            "company": career_info['career'].get('company', 'N/A'),
+            "department": career_info['career'].get('department', 'N/A'),
+            "years_experience": career_info['career'].get('years_experience', 0)
         }
+
+    async def generate_person_profile(self):
+        """
+        Master async method to fill out entire profile.
+        Includes better error handling and ensures all required fields are set.
+        """
+        try:
+            # Set basic info first
+            self.set_country()
+            self.set_gender()
+            self.set_birth_year_and_age()
+
+            # Generate name and address concurrently with error handling
+            await asyncio.gather(
+                self.get_name(),
+                self.get_address()
+            )
+
+            # Verify critical fields are set
+            if not all([self.full_name, self.address, self.country, self.gender, self.age]):
+                raise ValueError("Critical profile information is missing")
+
+            # Build education/career
+            self.build_education_profile()
+            self.build_career_profile()
+
+        except Exception as e:
+            print(f"Profile generation error: {e}")
+            # Set fallback values for critical fields
+            if not self.full_name:
+                self.full_name = "John Doe"
+                self.full_name_romanized = "John Doe"
+            if not self.address:
+                self.address = "Unknown Address"
+            if not self.country:
+                self.country = "United States"
+                self.country_code = "en_US"
+            if not self.gender:
+                self.gender = "male"
+            if not self.age:
+                self.age = 30
+                self.birth_year = datetime.now().year - 30
