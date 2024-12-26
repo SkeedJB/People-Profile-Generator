@@ -3,12 +3,12 @@ import asyncio
 import uuid
 import random
 from datetime import datetime
-
+from businesses.business_creation import Business
 # Data
-from data.country_data import COUNTRIES, COUNTRY_LOCALES
-from data.education_data import education_data
+from profiles.data.country_data import COUNTRIES, COUNTRY_LOCALES
+from profiles.data.education_data import education_data
 # Generation
-from generation.gen_person import PersonProfile
+from profiles.generation.gen_person import PersonProfile
 
 app = Flask(__name__)
 
@@ -55,9 +55,11 @@ def build_profile_dict(person, color="#444", parents=None):
     # Process career history: read from person.career_profile
     career_history = []
     for job in person.career_profile.get('career_history', []):
+        company_name = str(job.get('company', 'Unknown'))
         processed_job = {
             'position': job.get('position', 'Unknown'),
-            'company': job.get('company', 'Unknown'),
+            'company': company_name,
+            'company_id': job.get('company_id') or str(uuid.uuid5(uuid.NAMESPACE_DNS, company_name)),
             'department': job.get('department', 'N/A'),
             'level': job.get('level', 'entry_level'),
             'field': job.get('field', 'N/A'),
@@ -71,7 +73,16 @@ def build_profile_dict(person, color="#444", parents=None):
     # Get current career info
     career = person.career_profile.get('career', {})
     if not career:
-        career = {'position': 'N/A', 'company': 'N/A', 'department': 'N/A', 'salary': 'N/A'}
+        career = {
+            'position': 'N/A', 
+            'company': 'N/A', 
+            'company_id': str(uuid.uuid5(uuid.NAMESPACE_DNS, 'N/A')),
+            'department': 'N/A', 
+            'salary': 'N/A'
+        }
+    else:
+        company_name = str(career.get('company', 'N/A'))
+        career['company_id'] = career.get('company_id') or str(uuid.uuid5(uuid.NAMESPACE_DNS, company_name))
 
     profile_uuid = str(uuid.uuid4())
 
@@ -97,6 +108,7 @@ def build_profile_dict(person, color="#444", parents=None):
         'career': career,
         'job_title': career.get('position', "N/A"),
         'company': career.get('company', "N/A"),
+        'company_id': career.get('company_id'),
         'department': career.get('department', "N/A"),
         'years_experience': career.get('years_experience', 'N/A'),
         'salary': career.get('salary', 'N/A'),
@@ -275,6 +287,39 @@ def profile_viewer(profile_uuid):
 @app.route('/saved_profiles')
 def saved_profiles():
     return render_template('saved_profiles.html', saved_profiles=SAVED_PROFILES)
+
+@app.route('/business/<business_uuid>')
+def business_viewer(business_uuid):
+    """
+    View a business dashboard. Creates a new business if it doesn't exist.
+    """
+    try:
+        # Get sector from query parameters
+        sector = request.args.get('sector')
+        
+        # Validate UUID format
+        print(f"Attempting to view business with UUID: {business_uuid}, sector: {sector}")
+        uuid.UUID(business_uuid)
+        
+        # Create the business instance with sector
+        business = Business(business_uuid=business_uuid, sector=sector)
+        print(f"Created business: {business.business_name}")
+        
+        # Generate dashboard
+        dashboard = business.create_dashboard()
+        dashboard_html = dashboard.to_html(full_html=False, include_plotlyjs=False)
+        
+        return render_template('business_viewer.html', 
+                             business=business, 
+                             business_dashboard=dashboard_html)
+    except ValueError as ve:
+        print(f"Invalid UUID format: {str(ve)}")
+        return render_template('error.html', message="Invalid business ID format."), 404
+    except Exception as e:
+        print(f"Error generating business: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        return render_template('error.html', message=f"Error generating business: {str(e)}"), 404
 
 @app.errorhandler(404)
 def page_not_found(e):

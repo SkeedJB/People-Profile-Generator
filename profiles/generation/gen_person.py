@@ -2,11 +2,12 @@ import random
 import asyncio
 from datetime import datetime
 from deep_translator import GoogleTranslator
-from data.country_data import COUNTRIES, COUNTRY_LOCALES
-from data.person_data import profile_data
-from generation.gen_education import EducationProfile
-from generation.gen_career import CareerGenerator
-from generation.global_faker import get_faker
+from profiles.data.country_data import COUNTRIES, COUNTRY_LOCALES
+from profiles.data.person_data import profile_data
+from profiles.generation.gen_education import EducationProfile
+from profiles.generation.gen_career import CareerGenerator
+from profiles.generation.global_faker import get_faker
+import uuid
 
 class PersonProfile:
     """
@@ -175,6 +176,7 @@ class PersonProfile:
             career_info['career'] = {
                 "position": "Unemployed",
                 "company": "N/A",
+                "company_id": None,
                 "department": "N/A",
                 "salary": "N/A",
                 "years_experience": 0
@@ -185,9 +187,64 @@ class PersonProfile:
             "career": career_info['career'],
             "job_title": career_info['career'].get('position', 'N/A'),
             "company": career_info['career'].get('company', 'N/A'),
+            "company_id": career_info['career'].get('company_id'),
             "department": career_info['career'].get('department', 'N/A'),
             "years_experience": career_info['career'].get('years_experience', 0)
         }
+
+    def _generate_career_entry(self, start_year, duration):
+        """Generate a single career entry with a valid business UUID"""
+        company_name = self.faker.company()
+        # Generate a deterministic UUID for the company based on its name
+        company_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, company_name))
+        
+        return {
+            'position': self.faker.job(),
+            'company': company_name,
+            'company_id': company_id,  # Add UUID for company
+            'department': self.faker.department(),
+            'level': random.choice(self.career_levels),
+            'field': random.choice(self.career_fields),
+            'salary': f"${random.randint(30000, 150000):,}/year",
+            'start_year': start_year,
+            'end_year': start_year + duration,
+            'duration': duration
+        }
+
+    def _generate_career_history(self):
+        """Generate career history with consistent company IDs"""
+        career_history = []
+        current_year = self.current_year
+        remaining_years = self.work_years
+
+        while remaining_years > 0:
+            duration = min(random.randint(1, 5), remaining_years)
+            start_year = current_year - remaining_years
+            
+            career_entry = self._generate_career_entry(start_year, duration)
+            career_history.append(career_entry)
+            
+            remaining_years -= duration
+
+        # Sort career history by start_year in descending order
+        career_history.sort(key=lambda x: x['start_year'], reverse=True)
+        return career_history
+
+    def _generate_current_career(self):
+        """Generate current career with valid business UUID"""
+        if random.random() < 0.9:  # 90% chance of being employed
+            company_name = self.faker.company()
+            # Generate a deterministic UUID for the company based on its name
+            company_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, company_name))
+            
+            return {
+                'position': self.faker.job(),
+                'company': company_name,
+                'company_id': company_id,  # Add UUID for company
+                'department': self.faker.department(),
+                'salary': f"${random.randint(30000, 150000):,}/year"
+            }
+        return None
 
     async def generate_person_profile(self):
         """

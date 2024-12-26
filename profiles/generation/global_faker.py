@@ -1,5 +1,5 @@
 from faker import Faker
-from data.country_data import COUNTRY_LOCALES
+from profiles.data.country_data import COUNTRY_LOCALES
 GLOBAL_FAKER_INSTANCES = {}
 
 def get_faker(locale=list(COUNTRY_LOCALES.values())[0]):

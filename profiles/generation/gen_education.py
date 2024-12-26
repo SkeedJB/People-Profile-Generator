@@ -1,5 +1,5 @@
-from data.person_data import profile_data
-from data.education_data import education_data
+from profiles.data.person_data import profile_data
+from profiles.data.education_data import education_data
 import random
 from typing import Dict, List
 from datetime import datetime

@@ -84,7 +84,14 @@
                     </li>
                     <li class="mb-2">
                       <i class="fas fa-building me-2"></i>
-                      <strong>Company:</strong> {{profile.career.company}}
+                      <strong>Company:</strong> 
+                      {% if profile.career.company_id %}
+                          <a href="{{ url_for('business_viewer', business_uuid=profile.career.company_id, sector=profile.career.company_sector) }}">
+                              {{profile.career.company}}
+                          </a>
+                      {% else %}
+                          {{profile.career.company}}
+                      {% endif %}
                     </li>
                     <li class="mb-2">
                       <i class="fas fa-sitemap me-2"></i>
@@ -181,6 +188,16 @@
                       <div class="col-md-6">
                         <strong>Company Details:</strong>
                         <ul class="list-unstyled mt-2">
+                          <li class="mb-2">
+                            <i class="fas fa-building me-2"></i>
+                            {% if job.company_id %}
+                                <a href="{{ url_for('business_viewer', business_uuid=job.company_id, sector=job.company_sector) }}">
+                                    {{ job.company }}
+                                </a>
+                            {% else %}
+                                {{ job.company }}
+                            {% endif %}
+                          </li>
                           <li class="mb-2">
                             <i class="fas fa-clock me-2"></i>
                             Duration: {{ job.duration }} years

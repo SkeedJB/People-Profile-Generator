@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+      <!-- Back Navigation -->
+      <div class="mb-4">
+        <a href="{{ url_for('profile_viewer', profile_uuid=request.referrer.split('/')[-1]) }}" class="btn btn-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Back to Profile
+        </a>
+      </div>
+
+      <!-- Business Information Header -->
+      <div class="row mb-4">
+        <div class="col-md-8">
+          <h2 class="mb-3" style="font-family: 'Tinos-Bold', serif;">{{ business.business_name }}</h2>
+          <div class="d-flex gap-4">
+            <div>
+              <i class="fas fa-building me-2"></i>
+              <strong>Sector:</strong> {{ business.business_sector }}
+            </div>
+            <div>
+              <i class="fas fa-chart-line me-2"></i>
+              <strong>Tier:</strong> {{ business.business_tier }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Business Metrics Dashboard -->
+      <div class="dashboard-container">
+        {{ business_dashboard | safe }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add custom styles -->
+{% block styles %}
+<style>
+  .dashboard-container {
+    width: 107%;
+    height: 1200px;
+    overflow: hidden;
+  }
+  
+  .js-plotly-plot {
+    background-color: white;
+  }
+  
+  .card {
+    background-color: #ffffff;
+    color: #232324;
+  }
+</style>
+{% endblock %}
+{% endblock %}

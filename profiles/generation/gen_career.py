@@ -1,11 +1,11 @@
 from typing import Dict, List, Optional, Tuple
 import random
 from datetime import datetime
-
-# Import your new provider
-from generation.providers.company_name_provider import CompanyNameProvider
-
-from generation.global_faker import get_faker
+import uuid
+# Fix these import paths
+from profiles.generation.providers.company_name_provider import CompanyNameProvider
+from profiles.generation.global_faker import get_faker
+from businesses.business_utils import generate_business_name_and_id
 
 class CareerGenerator:
     # Role prefixes stay consistent across levels of seniority
@@ -19,9 +19,9 @@ class CareerGenerator:
     # Expanded ROLE_DOMAINS to match education majors
     ROLE_DOMAINS = {
         'Retail': [
-            ('Sales', 'Manager', 'Assistant'),
+            ('Sales', 'Lead', 'Assistant'),
             ('Retail', 'Store', 'Sales'),
-            ('Customer', 'Service', 'Management')
+            ('Manager', 'Service', 'Management')
         ],
         'Engineering': [
             ('Engineer', 'Developer', 'Technician'),
@@ -158,24 +158,76 @@ class CareerGenerator:
         
         return "entry_level"
 
-    def _generate_department(self, field: str) -> str:
-        departments = {
-            "Retail": ["Sales", "Customer Service", "Inventory Management", "Merchandising", "Marketing", "Store Management"],
-            "Engineering": ["Research and Development", "Quality Control", "Production", "Maintenance", "Safety", "Environmental"],
-            "Computer Science": ["Software Development", "Data Science", "Cybersecurity", "AI and Machine Learning", "Web Development", "Mobile Development"],
-            "Medicine": ["Clinical", "Research", "Pharmaceutical", "Healthcare", "Public Health"],
-            "Business": ["Sales", "Marketing", "Operations", "Finance", "Human Resources", "Legal", "Customer Service"],
-            "Education": ["Teaching", "Administration", "Curriculum Development", "Student Services", "Research"],
-            "Law": ["Litigation", "Corporate", "Intellectual Property", "Real Estate", "Tax"],
-            "Psychology": ["Clinical", "Organizational", "Research", "Forensic", "Educational"],
-            "Marketing": ["Digital Marketing", "Brand Management", "Product Marketing", "Advertising", "Market Research"],
-            "Accounting": ["Audit", "Tax", "Financial Planning", "Risk Management", "Compliance"],
-            "Information Technology": ["Software Development", "Network Administration", "Cybersecurity", "Data Analytics", "Cloud Computing"],
-            "Pharmacy": ["Clinical", "Pharmaceutical", "Research", "Retail", "Public Health"],
-            "Literature": ["Creative Writing", "Editing", "Publishing", "Literature Review", "Literary Criticism"],
-            "Science": ["Laboratory", "Research", "Data Analysis", "Scientific Writing", "Scientific Communication"]
+    def _generate_department_and_sector(self, field: str) -> tuple:
+        """Generate matching department and business sector"""
+        department_sector_map = {
+            "Retail": {
+                "departments": ["Sales", "Customer Service", "Inventory Management", "Merchandising", "Marketing", "Store Management"],
+                "sector": "Retail"
+            },
+            "Engineering": {
+                "departments": ["Research and Development", "Quality Control", "Production", "Maintenance", "Safety", "Environmental"],
+                "sector": "Manufacturing"
+            },
+            "Computer Science": {
+                "departments": ["Software Development", "Data Science", "Cybersecurity", "AI and Machine Learning", "Web Development", "Mobile Development"],
+                "sector": "Technology"
+            },
+            "Medicine": {
+                "departments": ["Clinical", "Research", "Pharmaceutical", "Healthcare", "Public Health"],
+                "sector": "Healthcare"
+            },
+            "Business": {
+                "departments": ["Sales", "Marketing", "Operations", "Finance", "Human Resources", "Legal", "Customer Service"],
+                "sector": "Business Services"
+            },
+            "Education": {
+                "departments": ["Teaching", "Administration", "Curriculum Development", "Student Services", "Research"],
+                "sector": "Education"
+            },
+            "Law": {
+                "departments": ["Litigation", "Corporate", "Intellectual Property", "Real Estate", "Tax"],
+                "sector": "Legal"
+            },
+            "Psychology": {
+                "departments": ["Clinical", "Organizational", "Research", "Forensic", "Educational"],
+                "sector": "Healthcare"
+            },
+            "Marketing": {
+                "departments": ["Digital Marketing", "Brand Management", "Product Marketing", "Advertising", "Market Research"],
+                "sector": "Marketing"
+            },
+            "Accounting": {
+                "departments": ["Audit", "Tax", "Financial Planning", "Risk Management", "Compliance"],
+                "sector": "Finance"
+            },
+            "Information Technology": {
+                "departments": ["Software Development", "Network Administration", "Cybersecurity", "Data Analytics", "Cloud Computing"],
+                "sector": "Technology"
+            },
+            "Pharmacy": {
+                "departments": ["Clinical", "Pharmaceutical", "Research", "Retail", "Public Health"],
+                "sector": "Healthcare"
+            },
+            "Literature": {
+                "departments": ["Creative Writing", "Editing", "Publishing", "Literature Review", "Literary Criticism"],
+                "sector": "Media"
+            },
+            "Science": {
+                "departments": ["Laboratory", "Research", "Data Analysis", "Scientific Writing", "Scientific Communication"],
+                "sector": "Research"
+            }
         }
-        return random.choice(departments.get(field, ["General"]))
+
+        field_info = department_sector_map.get(field, {
+            "departments": ["General"],
+            "sector": "General"
+        })
+        
+        department = random.choice(field_info["departments"])
+        sector = field_info["sector"]
+        
+        return department, sector
 
     def _generate_position_title(self, level: str, domain: str) -> str:
         """Generate a position title based on level and domain"""
@@ -191,16 +243,6 @@ class CareerGenerator:
         
         components = [random.choice(part) for part in domain_parts]
         return f"{prefix} {components[1]} {components[0]}" if prefix else f"{components[1]} {components[0]}"
-
-    def _generate_company_name(self, domain: str) -> str:
-        """
-        Generate a sector-specific company name by mapping the domain to a sector
-        and calling the Faker provider's company_name method.
-        """
-        # Use the domain-sector mapping from the provider
-        from generation.providers.company_name_provider import CompanyNameProvider
-        sector = CompanyNameProvider.DOMAIN_SECTOR_MAP.get(domain, "General")
-        return self.faker.company_name(sector=sector)
 
     def generate_career_history(self, education_history: List[Dict], age: int) -> Dict:
         """
@@ -294,16 +336,25 @@ class CareerGenerator:
                 end_job = "Present"
                 job_length = self.current_year - start_job
 
+            # Get matching department and sector
+            department, sector = self._generate_department_and_sector(current_domain)
+            
+            # Generate business name and ID with consistent mapping
+            company_name, company_id = generate_business_name_and_id(sector)
+            
             job = {
                 "position": self._generate_position_title(level, current_domain),
-                "company": self._generate_company_name(current_domain),
+                "company": company_name,
+                "company_id": company_id,
+                "company_sector": sector,
                 "field": current_domain,
                 "level": level,
                 "start_year": start_job,
                 "end_year": end_job,
                 "salary": self.get_salary(self.salary_for_level(level)),
                 "duration": job_length,
-                "department": self._generate_department(current_domain),
+                "department": department,
+                "sector": sector,
                 "years_experience": years_experience
             }
 

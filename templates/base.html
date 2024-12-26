@@ -8,12 +8,13 @@
     <link rel="stylesheet" href="../static/css/styles.css">
     <!-- Font Awesome 5 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body class="d-flex flex-column min-vh-100 bg-light">
     <!-- Navigation with Name on left and Dashboard and Saved Profiles in center-->
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #232324;">
         <div class="container-fluid">
-            <a class="navbar-brand ms-3" href="{{ url_for('home') }}" style="font-family: 'Tinos-Bold', serif;">
+            <a class="navbar-brand ms-3" href="{{ url_for('home') }}" style="font-family: 'Tinos-Bold', serif; font-size: 1.75rem;">
                 <strong>PROFILE GENERATOR</strong>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -24,12 +25,12 @@
             <div class="collapse navbar-collapse" id="navbarCollapsed">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item" style="font-family: 'DMSerifText-Regular', serif;">
-                        <a class="nav-link text-light" href="{{ url_for('profile_dashboard') }}">
-                            <i class="fas fa-th-large me-2"></i><strong>Dashboard</strong>
+                        <a class="nav-link text-light" href="{{ url_for('profile_dashboard') }}" style="font-size: 1.1rem;">
+                            <i class="fas fa-th-large me-2"></i><strong >Dashboard</strong>
                         </a>
                     </li>
                     <li class="nav-item mx-3" style="font-family: 'DMSerifText-Regular', serif;">
-                        <a class="nav-link text-light" href="{{ url_for('saved_profiles') }}">
+                        <a class="nav-link text-light" href="{{ url_for('saved_profiles') }}" style="font-size: 1.1rem;">
                             <i class="fas fa-star me-2"></i><strong>Saved Profiles</strong>
                         </a>
                     </li>
